@@ -1,0 +1,86 @@
+[
+  {
+    "id": "hacienda-real",
+    "nombre": "Hacienda Real Honduras",
+    "categoria": "Parrilladas / Gourmet",
+    "rating": 4.8,
+    "tiempo": "30-45 min",
+    "imagen": "/imgs/haciendareal.jpg",
+    "platos": [
+      {
+        "nombre": "Parrillada Mixta",
+        "descripcion": "Selección de res, pollo y chorizo servidos con frijoles, plátano frito y tortillas calientes.",
+        "precio": 480,
+        "imagen": "/imgs/parrilla.jpg"
+      },
+      {
+        "nombre": "Filete Jalapeño",
+        "descripcion": "Corte de res con salsa cremosa de jalapeño, acompañado de puré y ensalada fresca.",
+        "precio": 420,
+        "imagen": "/imgs/filete.jpg"
+      },
+      {
+        "nombre": "Tacos Real",
+        "descripcion": "Taco de carne de res servida con su encurtido, limon y cebolla acompañado con sus salsas.",
+        "precio": 380,
+        "imagen": "/imgs/tacos.jpg"
+      }
+    ]
+  },
+  {
+    "id": "la-cumbre",
+    "nombre": "La Cumbre",
+    "categoria": "Gourmet / Vista panorámica",
+    "rating": 4.7,
+    "tiempo": "40-55 min",
+    "imagen": "/imgs/cumbre.jpg",
+    "platos": [
+      {
+        "nombre": "Filete en salsa de vino tinto",
+        "descripcion": "Jugoso corte de res con reducción de vino tinto, acompañado de puré de papas y vegetales salteados.",
+        "precio": 450,
+        "imagen": "/imgs/filete-vino.jpg"
+      },
+      {
+        "nombre": "Camarones al coco",
+        "descripcion": "Camarones empanizados en coco rallado con salsa de piña y arroz jazmín.",
+        "precio": 390,
+        "imagen": "/imgs/camarones-coco.jpg"
+      },
+      {
+        "nombre": "Pasta Alfredo con Pollo",
+        "descripcion": "Fetuccine con salsa cremosa de parmesano y pechuga de pollo grillé.",
+        "precio": 350,
+        "imagen": "/imgs/pasta-alfredo.jpg"
+      }
+    ]
+  },
+  {
+    "id": "the-market",
+    "nombre": "The Market (Tegucigalpa)",
+    "categoria": "Internacional / Italiana",
+    "rating": 4.6,
+    "tiempo": "25-40 min",
+    "imagen": "/imgs/market.jpg",
+    "platos": [
+      {
+        "nombre": "Pizza Margarita",
+        "descripcion": "Clásica pizza italiana con mozzarella fresca, tomate y albahaca.",
+        "precio": 290,
+        "imagen": "/imgs/pizza-margarita.jpg"
+      },
+      {
+        "nombre": "Pasta Carbonara",
+        "descripcion": "Espaguetis con salsa cremosa de huevo, queso parmesano y tocino.",
+        "precio": 310,
+        "imagen": "/imgs/pasta-carbonara.jpg"
+      },
+      {
+        "nombre": "Risotto de mariscos",
+        "descripcion": "Arroz cremoso con camarones, calamares y mejillones en salsa blanca.",
+        "precio": 370,
+        "imagen": "/imgs/risotto-mariscos.jpg"
+      }
+    ]
+  }
+]

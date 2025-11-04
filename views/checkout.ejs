@@ -1,0 +1,51 @@
+<%- include('parcial/header') %>
+
+<section class="checkout-container">
+  <div class="checkout-card">
+    <h1>Finalizar Pedido</h1>
+    <p class="subtitle">Revisa tus datos y confirma tu orden.</p>
+
+    <form action="/checkout" method="POST" class="checkout-form">
+      <!-- Datos del cliente -->
+      <div class="form-section">
+        <h2>Datos del Cliente</h2>
+        <input type="text" name="nombre" placeholder="Nombre completo" required>
+        <input type="text" name="direccion" placeholder="Dirección de entrega" required>
+      </div>
+
+      <!-- Pedido seleccionado -->
+      <div class="form-section">
+        <h2>Resumen del Pedido</h2>
+        <div class="pedido-box">
+          <p><strong>Restaurante:</strong> <%= restaurante || "—" %></p>
+          <p><strong>Plato:</strong> <%= plato || "—" %></p>
+          <p><strong>Precio:</strong> L <%= precio || "0" %></p>
+        </div>
+
+        <!-- Campos ocultos para enviar datos -->
+        <input type="hidden" name="restauranteId" value="<%= restaurante || '' %>">
+        <input type="hidden" name="pedido" value="<%= plato || '' %>">
+      </div>
+
+      <!-- Programar entrega -->
+      <div class="form-section">
+        <h2>Programar Entrega</h2>
+        <label>Fecha:</label>
+        <input type="date" name="scheduleDate" required>
+
+        <label>Hora:</label>
+        <select name="scheduleSlot" required>
+          <option value="Inmediato">Inmediato</option>
+          <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+          <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
+          <option value="6:00 PM - 8:00 PM">6:00 PM - 8:00 PM</option>
+        </select>
+      </div>
+
+      <!-- Botón de confirmación -->
+      <button type="submit" class="btn-confirmar">Confirmar Pedido</button>
+    </form>
+  </div>
+</section>
+
+<%- include('parcial/footer') %>

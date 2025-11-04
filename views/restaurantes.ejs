@@ -1,0 +1,20 @@
+<%- include('parcial/header') %>
+
+<div class="container">
+  <h2 class="section-title">Explorar restaurantes</h2>
+  <section class="grid">
+    <% restaurantes.forEach(r => { %>
+      <article class="card">
+        <a href="/restaurantes/<%= r.id %>" style="text-decoration:none;color:inherit">
+          <div class="card-media"><img src="<%= r.imagen %>" alt="<%= r.nombre %>"></div>
+          <div class="card-body">
+            <h3><%= r.nombre %></h3>
+            <p class="muted"><%= r.categoria %> • ⭐ <%= r.rating %> • <%= r.tiempo %></p>
+          </div>
+        </a>
+      </article>
+    <% }) %>
+  </section>
+</div>
+
+<%- include('parcial/footer') %>

@@ -1,0 +1,22 @@
+{
+  "name": "ubereats-lite",
+  "version": "1.0.0",
+  "description": "Mini UberEats con Node y EJS puro",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "fs-extra": "^11.3.2",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

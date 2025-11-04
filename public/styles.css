@@ -1,0 +1,240 @@
+/* ====== Tokens ====== */
+:root{
+  --bg:#0f172a;           /* fondo principal */
+  --surface:#1e293b;      /* tarjetas / contenedores */
+  --hover:#27354a;        /* hover cards */
+  --accent:#10b981;       /* verde corporativo */
+  --accent-hover:#059669; /* verde hover */
+  --text:#f9fafb;         /* texto principal */
+  --muted:#94a3b8;        /* texto secundario */
+  --shadow:0 6px 18px rgba(0,0,0,.4);
+  --radius:14px;
+  --transition:all .2s ease;
+}
+
+/* ====== Reset ====== */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+
+/* ====== Utilidades ====== */
+.container{max-width:1200px;margin:0 auto;padding:32px 20px}
+.shadow{box-shadow:var(--shadow)}
+
+/* ====== Navbar ====== */
+.navbar{
+  position:sticky;top:0;z-index:50;
+  background:var(--surface);
+  box-shadow:0 2px 12px rgba(0,0,0,.5);
+  padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #0d1117;
+}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-name{font-weight:800;color:var(--accent);font-size:1.3rem}
+.nav-actions a{
+  margin-left:12px;padding:9px 14px;border-radius:10px;font-weight:600;
+  border:1px solid transparent;transition:var(--transition)
+}
+.btn-ghost{border-color:var(--accent);color:var(--accent);background:transparent}
+.btn-ghost:hover{background:var(--accent);color:var(--bg)}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent-hover)}
+
+/* ====== Hero / encabezado ====== */
+.page-hero{
+  padding:36px 0 8px;
+}
+.page-hero h1{
+  font-size:2.2rem;line-height:1.2;margin-bottom:8px;
+  color:var(--text)
+}
+.page-hero p{color:var(--muted)}
+
+/* ====== Sección título ====== */
+.menu-title{
+  margin:28px 0 18px;
+  font-weight:800;
+  font-size:1.2rem;
+  border-left:4px solid var(--accent);
+  padding-left:12px;
+  color:var(--text)
+}
+
+/* ====== Grid de restaurantes ====== */
+.grid{
+  display:grid;
+  gap:24px;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+}
+.card{
+  background:var(--surface);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  transition:var(--transition);
+}
+.card:hover{
+  transform:translateY(-4px);
+  background:var(--hover);
+  box-shadow:0 12px 32px rgba(0,0,0,.6);
+}
+.card-media{height:180px;overflow:hidden}
+.card-media img{width:100%;height:100%;object-fit:cover}
+.card-body{padding:16px 20px}
+.card-title{
+  font-size:1.1rem;
+  font-weight:700;
+  color:var(--accent);
+  margin-bottom:6px;
+}
+.card-meta{
+  display:flex;flex-wrap:wrap;gap:10px;
+  font-size:.9rem;color:var(--muted)
+}
+.card-meta .dot::before{content:"•";margin:0 6px;color:#64748b}
+
+/* ====== Footer ====== */
+.site-footer{
+  margin-top:48px;
+  padding:28px 0;
+  font-size:.92rem;
+  text-align:center;
+  color:var(--muted);
+  border-top:1px solid #1e293b;
+}
+
+/* ====== Scrollbar personalizado ====== */
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:#0f172a}
+::-webkit-scrollbar-thumb{background:#334155;border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:#475569}
+
+/* ====== Foco ====== */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* === Carta del restaurante === */
+.menu-grid{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.dish-card{
+  display:grid;
+  grid-template-columns:110px 1fr auto;
+  align-items:center;
+  background:var(--surface);
+  border-radius:var(--radius);
+  padding:14px 20px;
+  box-shadow:var(--shadow);
+  transition:var(--transition);
+}
+.dish-card:hover{background:var(--hover);transform:translateY(-3px)}
+.dish-image img{
+  width:100px;height:100px;
+  border-radius:12px;object-fit:cover;
+}
+.dish-info{padding:0 14px}
+.dish-info h3{margin:0;color:var(--accent);font-size:1.05rem}
+.dish-info p{color:var(--muted);font-size:.9rem;margin-top:3px}
+.dish-price{font-weight:700;color:var(--accent)}
+.order-btn{
+  border:none;padding:8px 14px;border-radius:8px;
+  background:var(--accent);color:var(--bg);font-weight:600;cursor:pointer;
+  transition:var(--transition);
+}
+.order-btn:hover{background:var(--accent-hover)}
+
+/* Checkout */
+/* === CHECKOUT DARK THEME === */
+.checkout-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 60px 20px;
+  background-color: #0b1120;
+  min-height: 100vh;
+}
+
+.checkout-card {
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 550px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  color: #f9fafb;
+}
+
+.checkout-card h1 {
+  font-size: 1.8rem;
+  margin-bottom: 5px;
+  color: #10b981;
+}
+
+.subtitle {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  margin-bottom: 25px;
+}
+
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section h2 {
+  color: #22d3ee;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.checkout-form input,
+.checkout-form select {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: #334155;
+  color: white;
+}
+
+.checkout-form input:focus,
+.checkout-form select:focus {
+  background: #475569;
+  border: 1px solid #10b981;
+}
+
+.pedido-box {
+  background: #334155;
+  border-radius: 10px;
+  padding: 15px;
+  color: #e2e8f0;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.btn-confirmar {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(135deg, #10b981, #059669);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-confirmar:hover {
+  background: linear-gradient(135deg, #34d399, #059669);
+}

@@ -1,0 +1,35 @@
+<%- include('parcial/header') %>
+
+<div class="container">
+  <div class="panel">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <span class="badge" style="background:rgba(34,197,94,.18);color:#86efac;border:1px solid rgba(34,197,94,.35)">✔ Pedido confirmado</span>
+    </div>
+    <h2 style="margin:6px 0 14px">¡Gracias, <%= orden.nombre %>!</h2>
+    <p class="muted">Tu orden fue registrada correctamente.</p>
+
+    <div class="grid-2" style="margin-top:12px">
+      <div class="panel" style="background:var(--panel-2)">
+        <strong>Resumen</strong>
+        <p class="muted">Restaurante: <code><%= orden.restauranteId %></code></p>
+        <p class="muted">Plato: <%= orden.pedido %></p>
+        <% if (orden.scheduleDate) { %>
+          <p class="muted">Entrega: <%= orden.scheduleDate %> • <%= orden.scheduleSlot %></p>
+        <% } %>
+      </div>
+      <div class="panel" style="background:var(--panel-2)">
+        <strong>Entrega</strong>
+        <p class="muted">Dirección: <%= orden.direccion %></p>
+        <p class="muted">Fecha: <%= orden.fecha %></p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <a class="btn btn-primary" href="/">Volver al inicio</a>
+      <button class="btn btn-ghost" data-copy="<%= orden.id %>" data-label="Copiar ID">Copiar ID</button>
+    </div>
+  </div>
+</div>
+
+<%- include('parcial/footer') %>
+<script src="/app.js"></script>

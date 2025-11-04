@@ -1,0 +1,32 @@
+<%- include('parcial/header') %>
+
+<section class="container page-hero">
+  <h1>La entrega de tus pedidos está cerca de ti</h1>
+  <p>Descuentos • Más vendidos • Vegano • Típico</p>
+</section>
+
+<section class="container">
+  <h2 class="menu-title">Restaurantes destacados</h2>
+
+  <div class="grid">
+    <% restaurantes.forEach(r => { %>
+      <a href="/restaurantes/<%= r.id %>" class="card">
+        <div class="card-media">
+          <img src="<%= r.imagen %>" alt="<%= r.nombre %>">
+        </div>
+        <div class="card-body">
+          <div class="card-title"><%= r.nombre %></div>
+          <div class="card-meta">
+            <span><%= r.categoria %></span>
+            <span class="dot"></span>
+            <span>⭐ <%= r.rating %></span>
+            <span class="dot"></span>
+            <span><%= r.tiempo %></span>
+          </div>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+</section>
+
+<%- include('parcial/footer') %>
