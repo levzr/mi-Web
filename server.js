@@ -1,8 +1,7 @@
 // ======================================================
 // 🧠 PedidosHN - Servidor Express + EJS
-// Autor: Vidal Cisneros
-// Descripción: Backend principal de pedidos tipo UberEats
-// Puerto: 4000
+// Descripción: Backend principal de pedidos o entregas para restaurantes
+// Puerto: 3000
 // ======================================================
 
 import express from "express";
@@ -17,7 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 // ======================================================
 // 📁 RUTAS DE ARCHIVOS
