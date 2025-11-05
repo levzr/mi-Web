@@ -25,9 +25,10 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Variable global disponible en todas las vistas
+// Variables globales disponibles en todas las vistas
 app.use((req, res, next) => {
-  res.locals.siteName = "PedidosHN"; // 👈 Nombre de tu sitio
+  res.locals.siteName = "PedidosHN";
+  res.locals.currentYear = new Date().getFullYear();
   next();
 });
 
