@@ -142,15 +142,15 @@ app.post("/checkout", async (req, res) => {
 });
 
 // ===============================================
-// 📡 API REST - Endpoints
+// 🌐 API REST - Endpoints para Postman / Fetch
 // ===============================================
 
-// ✅ Obtener lista de restaurantes
+// Obtener lista de restaurantes
 app.get("/api/restaurantes", (req, res) => {
   res.json(restaurantes);
 });
 
-// ✅ Crear una nueva orden
+// Crear una nueva orden (API REST)
 app.post("/api/ordenes", async (req, res) => {
   try {
     const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot } = req.body;
@@ -189,19 +189,20 @@ app.post("/api/ordenes", async (req, res) => {
       ]
     );
 
-    const ordenId = orderResult.rows[0].id;
-
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Orden registrada exitosamente",
-      orderId: ordenId
+      orderId: orderResult.rows[0].id
     });
-
   } catch (err) {
-    console.error("🔥 Error procesando API orden:", err);
-    res.status(500).json({ success: false, message: "Error interno al procesar la orden" });
+    console.error("🔥 Error en API /api/ordenes:", err);
+    res.status(500).json({
+      success: false,
+      error: "Error interno al procesar el pedido"
+    });
   }
 });
+
 
 // ===============================================
 // Servidor corriendo
