@@ -1,0 +1,17 @@
+<%- include('parcial/header', { siteName: siteName }) %>
+
+<section class="container" style="max-width:400px;margin:auto;">
+  <h2>Iniciar sesión</h2>
+  <form action="/api/login" method="POST">
+    <label>Email</label>
+    <input type="email" name="email" required class="input">
+
+    <label>Contraseña</label>
+    <input type="password" name="password" required class="input">
+
+    <button type="submit" class="btn-primary">Entrar</button>
+  </form>
+  <p>¿No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
+</section>
+
+<%- include('parcial/footer', { siteName: siteName }) %>

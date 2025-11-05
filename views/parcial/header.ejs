@@ -18,10 +18,17 @@
       <span class="brand-name">PedidosHN</span>
     </a>
     <div class="nav-actions">
-      <a href="/checkout" class="btn-ghost">Checkout</a>
-      <a href="/login" class="btn-primary">Iniciar sesión</a>
-    </div>
-  </nav>
+    <% if (user) { %>
+      <span>👋 Hola, <%= user.nombre %></span>
+      <form action="/api/logout" method="POST" style="display:inline;">
+        <button type="submit" class="btn-ghost">Cerrar sesión</button>
+      </form>
+    <% } else { %>
+      <a href="/login" class="btn-ghost">Iniciar sesión</a>
+      <a href="/register" class="btn-primary">Registrarse</a>
+    <% } %>
+  </div>
+</nav>
 
 
 

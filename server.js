@@ -8,6 +8,9 @@ import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
 import { pool } from "./db.js";
 import fs from "fs";
+import bcrypt from "bcrypt";
+import session from "express-session";
+import pgSession from "connect-pg-simple";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,9 +28,29 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Variable global disponible en todas las vistas
+// ===============================================
+// Configurar sesiones (guardadas en PostgreSQL)
+// ===============================================
+const PgSession = pgSession(session);
+app.use(
+  session({
+    store: new PgSession({
+      pool: pool,
+      tableName: "session",
+    }),
+    secret: "super-secreto-pedidoshn",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 días
+  })
+);
+
+// ===============================================
+// Variables globales disponibles en las vistas
+// ===============================================
 app.use((req, res, next) => {
   res.locals.siteName = "PedidosHN";
+  res.locals.user = req.session.user || null;
   next();
 });
 
@@ -58,7 +81,9 @@ app.get("/", (req, res) => {
 app.get("/restaurantes/:slug", (req, res) => {
   const restaurante = restaurantes.find((r) => r.id === req.params.slug);
   if (!restaurante) {
-    return res.status(404).render("error", { mensaje: "Restaurante no encontrado" });
+    return res
+      .status(404)
+      .render("error", { mensaje: "Restaurante no encontrado" });
   }
   res.render("restaurantes", { restaurante });
 });
@@ -69,17 +94,26 @@ app.get("/checkout", (req, res) => {
   res.render("checkout", { restaurante, plato, precio });
 });
 
+// ✅ Vistas de login y registro
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
 // Procesar pedido desde formulario (EJS)
 app.post("/checkout", async (req, res) => {
   try {
     const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot } = req.body;
 
     const userResult = await pool.query(
-      `INSERT INTO usuarios (nombre, email, direccion)
-       VALUES ($1, $2, $3)
+      `INSERT INTO usuarios (nombre, email, direccion, password)
+       VALUES ($1, $2, $3, $4)
        ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion
        RETURNING id`,
-      [nombre, `${nombre.toLowerCase()}@correo.com`, direccion]
+      [nombre, `${nombre.toLowerCase()}@correo.com`, direccion, "autogen"]
     );
 
     const usuarioId = userResult.rows[0].id;
@@ -91,10 +125,9 @@ app.post("/checkout", async (req, res) => {
 
     const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
 
-    const orderResult = await pool.query(
+    await pool.query(
       `INSERT INTO ordenes (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-       RETURNING id`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
       [
         usuarioId,
         nombre,
@@ -104,7 +137,7 @@ app.post("/checkout", async (req, res) => {
         pedido,
         new Date(),
         scheduleDate || "Hoy",
-        scheduleSlot || "Inmediato"
+        scheduleSlot || "Inmediato",
       ]
     );
 
@@ -115,8 +148,6 @@ app.post("/checkout", async (req, res) => {
       scheduleDate,
       scheduleSlot,
       fecha: new Date().toISOString(),
-      restaurante: restauranteId,
-      restaurante_slug: restauranteId
     });
   } catch (err) {
     console.error("🔥 Error procesando pedido:", err);
@@ -125,38 +156,85 @@ app.post("/checkout", async (req, res) => {
 });
 
 // ===============================================
-// 🌐 API REST (para Postman / consumo externo)
+// 🧑‍💻 Rutas de Autenticación (API)
 // ===============================================
 
-// Obtener lista de restaurantes
-app.get("/api/restaurantes", (req, res) => {
-  res.json(restaurantes);
+// Registro
+app.post("/api/register", async (req, res) => {
+  try {
+    const { nombre, email, password, direccion } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await pool.query(
+      `INSERT INTO usuarios (nombre, email, password, direccion)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (email) DO NOTHING`,
+      [nombre, email, hashedPassword, direccion || ""]
+    );
+
+    res.json({ success: true, message: "Usuario registrado correctamente" });
+  } catch (err) {
+    console.error("Error en /api/register:", err.message);
+    res.status(500).json({ success: false, error: "Error registrando usuario" });
+  }
 });
 
-// Crear una nueva orden (POST)
+// Login
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const result = await pool.query("SELECT * FROM usuarios WHERE email = $1", [email]);
+    const user = result.rows[0];
+
+    if (!user) return res.status(401).json({ success: false, message: "Usuario no encontrado" });
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword)
+      return res.status(401).json({ success: false, message: "Contraseña incorrecta" });
+
+    req.session.user = { id: user.id, nombre: user.nombre, email: user.email };
+    res.json({ success: true, message: "Inicio de sesión exitoso", user: req.session.user });
+  } catch (err) {
+    console.error("Error en /api/login:", err.message);
+    res.status(500).json({ success: false, error: "Error en el inicio de sesión" });
+  }
+});
+
+// Logout
+app.post("/api/logout", (req, res) => {
+  req.session.destroy(() => res.json({ success: true, message: "Sesión cerrada" }));
+});
+
+// Middleware de autenticación
+function verificarSesion(req, res, next) {
+  if (!req.session.user) return res.status(403).json({ message: "Debes iniciar sesión" });
+  next();
+}
+
+// ===============================================
+// 🌐 API REST - Pedidos y Restaurantes
+// ===============================================
+
+// Lista de restaurantes
+app.get("/api/restaurantes", (req, res) => res.json(restaurantes));
+
+// Crear una orden
 app.post("/api/ordenes", async (req, res) => {
   try {
     const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot } = req.body;
 
-    if (!nombre || !direccion || !restauranteId || !pedido) {
+    if (!nombre || !direccion || !restauranteId || !pedido)
       return res.status(400).json({ success: false, message: "Faltan datos obligatorios" });
-    }
 
     const userResult = await pool.query(
-      `INSERT INTO usuarios (nombre, email, direccion)
-       VALUES ($1, $2, $3)
+      `INSERT INTO usuarios (nombre, email, direccion, password)
+       VALUES ($1, $2, $3, $4)
        ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion
        RETURNING id`,
-      [nombre, `${nombre.toLowerCase().replace(/\s+/g, '')}@correo.com`, direccion]
+      [nombre, `${nombre.toLowerCase().replace(/\s+/g, "")}@correo.com`, direccion, "autogen"]
     );
 
     const usuarioId = userResult.rows[0].id;
-
-    const restResult = await pool.query(
-      `SELECT id FROM restaurantes WHERE slug = $1 LIMIT 1`,
-      [restauranteId]
-    );
-
+    const restResult = await pool.query(`SELECT id FROM restaurantes WHERE slug = $1`, [restauranteId]);
     const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
 
     const orderResult = await pool.query(
@@ -172,53 +250,31 @@ app.post("/api/ordenes", async (req, res) => {
         pedido,
         new Date(),
         scheduleDate || "Hoy",
-        scheduleSlot || "Inmediato"
+        scheduleSlot || "Inmediato",
       ]
     );
 
-    res.status(201).json({
-      success: true,
-      message: "Orden registrada exitosamente",
-      orderId: orderResult.rows[0].id
-    });
+    res.status(201).json({ success: true, message: "Orden registrada", orderId: orderResult.rows[0].id });
   } catch (err) {
-    console.error("🔥 Error en API /api/ordenes:", err.message);
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
+    console.error("🔥 Error en /api/ordenes:", err.message);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Obtener todas las órdenes registradas
+// Ver todas las órdenes
 app.get("/api/ordenes", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT 
-        o.id, 
-        o.nombre, 
-        o.direccion, 
-        o.pedido, 
-        o.fecha, 
-        o.schedule_date, 
-        o.schedule_slot, 
-        r.nombre AS restaurante
+      SELECT o.id, o.nombre, o.direccion, o.pedido, o.fecha,
+             o.schedule_date, o.schedule_slot, r.nombre AS restaurante
       FROM ordenes o
       LEFT JOIN restaurantes r ON o.restaurante_id = r.id
       ORDER BY o.fecha DESC
     `);
-
-    res.json({
-      success: true,
-      total: result.rows.length,
-      data: result.rows
-    });
+    res.json({ success: true, total: result.rows.length, data: result.rows });
   } catch (err) {
     console.error("🔥 Error al obtener órdenes:", err.message);
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -230,4 +286,5 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PedidosHN corriendo en: http://0.0.0.0:${PORT}`);
   console.log("===================================================");
 });
+
 
