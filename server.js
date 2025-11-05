@@ -1,7 +1,5 @@
 // ======================================================
 // 🧠 PedidosHN - Servidor Express + EJS + PostgreSQL
-// Descripción: Backend principal de pedidos o entregas para restaurantes
-// Puerto: 3000
 // ======================================================
 
 import express from "express";
@@ -10,7 +8,7 @@ import { fileURLToPath } from "url";
 import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
-import { pool } from "./db.js"; // <-- Conexión PostgreSQL
+import { pool } from "./db.js"; // Conexión PostgreSQL
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,31 +47,40 @@ app.use((req, res, next) => {
 // RUTAS PRINCIPALES
 // ======================================================
 
-// Página principal (restaurantes desde JSON por ahora)
+// Restaurantes JSON
 const REST_PATH = path.join(__dirname, "data", "restaurantes.json");
 
 app.get("/", async (req, res) => {
-  const restaurantes = JSON.parse(await import(REST_PATH, { assert: { type: "json" } }).then(m => m.default));
+  const restaurantes = (await import(REST_PATH, { assert: { type: "json" } })).default;
   res.render("home", { restaurantes });
 });
 
 app.get("/restaurantes", async (req, res) => {
-  const restaurantes = JSON.parse(await import(REST_PATH, { assert: { type: "json" } }).then(m => m.default));
+  const restaurantes = (await import(REST_PATH, { assert: { type: "json" } })).default;
   res.render("restaurantes", { restaurantes });
 });
 
 app.get("/restaurantes/:id", async (req, res) => {
   try {
-    const restaurantes = JSON.parse(await import(REST_PATH, { assert: { type: "json" } }).then(m => m.default));
+    const restaurantes = (await import(REST_PATH, { assert: { type: "json" } })).default;
     const restaurante = restaurantes.find(r => String(r.id) === req.params.id);
+
     if (!restaurante) {
-      return res.status(404).render("error", { title: "Restaurante no encontrado", message: "El restaurante que buscas no existe." });
+      return res.status(404).render("error", {
+        title: "Restaurante no encontrado",
+        message: "El restaurante que buscas no existe.",
+      });
     }
+
     restaurante.menu = restaurante.platos || [];
     res.render("carta", { restaurante });
+
   } catch (error) {
     console.error("🔥 Error al cargar restaurante:", error);
-    res.status(500).render("error", { title: "Error del servidor", message: "Ocurrió un error inesperado." });
+    res.status(500).render("error", {
+      title: "Error del servidor",
+      message: "Ocurrió un error inesperado.",
+    });
   }
 });
 
@@ -83,13 +90,18 @@ app.get("/checkout", (req, res) => {
   res.render("checkout", { restaurante, plato, precio });
 });
 
-// Procesar pedido usando PostgreSQL
+// ======================================================
+// PROCESAR PEDIDO (PostgreSQL)
+// ======================================================
 app.post("/checkout", async (req, res) => {
   try {
     const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot } = req.body;
 
     if (!nombre || !direccion || !restauranteId || !pedido) {
-      return res.status(400).render("error", { title: "Error en el pedido", message: "Faltan campos obligatorios." });
+      return res.status(400).render("error", {
+        title: "Error en el pedido",
+        message: "Faltan campos obligatorios.",
+      });
     }
 
     const query = `
@@ -114,7 +126,10 @@ app.post("/checkout", async (req, res) => {
 
   } catch (error) {
     console.error("🔥 Error procesando pedido:", error);
-    res.status(500).render("error", { title: "Error del servidor", message: "Ocurrió un error al procesar tu pedido." });
+    res.status(500).render("error", {
+      title: "Error del servidor",
+      message: "Ocurrió un error al procesar tu pedido.",
+    });
   }
 });
 
@@ -123,7 +138,7 @@ app.post("/checkout", async (req, res) => {
 // ======================================================
 app.get("/api/restaurantes", async (req, res) => {
   try {
-    const restaurantes = JSON.parse(await import(REST_PATH, { assert: { type: "json" } }).then(m => m.default));
+    const restaurantes = (await import(REST_PATH, { assert: { type: "json" } })).default;
     res.json(restaurantes);
   } catch (err) {
     console.error("🔥 Error obteniendo restaurantes:", err);
@@ -145,12 +160,18 @@ app.get("/api/ordenes", async (req, res) => {
 // MANEJO DE ERRORES
 // ======================================================
 app.use((req, res) => {
-  res.status(404).render("error", { title: "404 - Página no encontrada", message: "La página que intentas visitar no existe." });
+  res.status(404).render("error", {
+    title: "404 - Página no encontrada",
+    message: "La página que intentas visitar no existe.",
+  });
 });
 
 app.use((err, req, res, next) => {
   console.error("🔥 Error interno:", err);
-  res.status(500).render("error", { title: "Error del servidor", message: "Ocurrió un error inesperado." });
+  res.status(500).render("error", {
+    title: "Error del servidor",
+    message: "Ocurrió un error inesperado.",
+  });
 });
 
 // ======================================================
