@@ -25,6 +25,13 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// Variable global disponible en todas las vistas
+app.use((req, res, next) => {
+  res.locals.siteName = "PedidosHN"; // 👈 Nombre de tu sitio
+  next();
+});
+
+
 // ===============================================
 // Cargar datos JSON locales
 // ===============================================
