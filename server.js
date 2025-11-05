@@ -59,9 +59,9 @@ app.get("/", (req, res) => {
 app.get("/restaurantes/:slug", (req, res) => {
   const restaurante = restaurantes.find((r) => r.id === req.params.slug);
   if (!restaurante) {
-    return res.status(404).render("error", {
+    return res.status(404).render("error", { 
       ...res.locals,
-      mensaje: "Restaurante no encontrado",
+      mensaje: "Restaurante no encontrado" 
     });
   }
   res.render("restaurantes", { ...res.locals, restaurante });
@@ -149,11 +149,21 @@ app.post("/checkout", async (req, res) => {
 
   } catch (err) {
     console.error("🔥 Error procesando pedido:", err);
-    res.status(500).render("error", {
+    res.status(500).render("error", { 
       ...res.locals,
-      mensaje: "Error interno al procesar el pedido",
+      mensaje: "Error interno al procesar el pedido" 
     });
   }
+});
+
+// ===============================================
+// Ruta por defecto (404)
+// ===============================================
+app.use((req, res) => {
+  res.status(404).render("error", { 
+    ...res.locals,
+    mensaje: "Página no encontrada" 
+  });
 });
 
 // ===============================================
