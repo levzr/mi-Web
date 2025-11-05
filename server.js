@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 
 // Variable global disponible en todas las vistas
 app.use((req, res, next) => {
-  res.locals.siteName = "PedidosHN"; // 👈 Nombre del sitio
+  res.locals.siteName = "PedidosHN";
   next();
 });
 
@@ -58,9 +58,7 @@ app.get("/", (req, res) => {
 app.get("/restaurantes/:slug", (req, res) => {
   const restaurante = restaurantes.find((r) => r.id === req.params.slug);
   if (!restaurante) {
-    return res
-      .status(404)
-      .render("error", { mensaje: "Restaurante no encontrado" });
+    return res.status(404).render("error", { mensaje: "Restaurante no encontrado" });
   }
   res.render("restaurantes", { restaurante });
 });
@@ -140,18 +138,22 @@ app.post("/api/ordenes", async (req, res) => {
   try {
     const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot } = req.body;
 
+    if (!nombre || !direccion || !restauranteId || !pedido) {
+      return res.status(400).json({ success: false, message: "Faltan datos obligatorios" });
+    }
+
     const userResult = await pool.query(
       `INSERT INTO usuarios (nombre, email, direccion)
        VALUES ($1, $2, $3)
        ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion
        RETURNING id`,
-      [nombre, `${nombre.toLowerCase()}@correo.com`, direccion]
+      [nombre, `${nombre.toLowerCase().replace(/\s+/g, '')}@correo.com`, direccion]
     );
 
     const usuarioId = userResult.rows[0].id;
 
     const restResult = await pool.query(
-      `SELECT id FROM restaurantes WHERE slug = $1`,
+      `SELECT id FROM restaurantes WHERE slug = $1 LIMIT 1`,
       [restauranteId]
     );
 
@@ -228,3 +230,4 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PedidosHN corriendo en: http://0.0.0.0:${PORT}`);
   console.log("===================================================");
 });
+
