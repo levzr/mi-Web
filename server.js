@@ -171,7 +171,72 @@ app.post("/api/ordenes", async (req, res) => {
     const userResult = await pool.query(
       `INSERT INTO usuarios (nombre, email, direccion)
        VALUES ($1, $2, $3)
-       ON C
+       ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion
+       RETURNING id`,
+      [nombre, `${nombre.toLowerCase()}@correo.com`, direccion]
+    );
 
+    const usuarioId = userResult.rows[0].id;
 
+    const restResult = await pool.query(
+      `SELECT id FROM restaurantes WHERE slug = $1`,
+      [restauranteId]
+    );
+
+    const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
+
+    const orderResult = await pool.query(
+      `INSERT INTO ordenes (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       RETURNING id`,
+      [
+        usuarioId,
+        nombre,
+        direccion,
+        restaurante_id,
+        restauranteId,
+        pedido,
+        new Date(),
+        scheduleDate || "Hoy",
+        scheduleSlot || "Inmediato",
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Orden registrada exitosamente",
+      orderId: orderResult.rows[0].id,
+    });
+  } catch (err) {
+    console.error("🔥 Error en /api/ordenes:", err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get("/api/ordenes", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        o.id, o.nombre, o.direccion, o.pedido, o.fecha, 
+        o.schedule_date, o.schedule_slot, r.nombre AS restaurante
+      FROM ordenes o
+      LEFT JOIN restaurantes r ON o.restaurante_id = r.id
+      ORDER BY o.fecha DESC
+    `);
+
+    res.json({ success: true, total: result.rows.length, data: result.rows });
+  } catch (err) {
+    console.error("🔥 Error al obtener órdenes:", err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ===============================================
+// Servidor corriendo
+// ===============================================
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("===================================================");
+  console.log(`🚀 PedidosHN corriendo en: http://0.0.0.0:${PORT}`);
+  console.log("===================================================");
+});
 
