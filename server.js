@@ -46,15 +46,12 @@ try {
 }
 
 // ===============================================
-// Ruta principal
+// Rutas HTML (frontend con EJS)
 // ===============================================
 app.get("/", (req, res) => {
   res.render("home", { restaurantes });
 });
 
-// ===============================================
-// Página de restaurante individual
-// ===============================================
 app.get("/restaurantes/:slug", (req, res) => {
   const restaurante = restaurantes.find((r) => r.id === req.params.slug);
   if (!restaurante) {
@@ -63,22 +60,16 @@ app.get("/restaurantes/:slug", (req, res) => {
   res.render("restaurantes", { restaurante });
 });
 
-// ===============================================
-// Página de checkout
-// ===============================================
 app.get("/checkout", (req, res) => {
   const { restaurante, plato, precio } = req.query;
   res.render("checkout", { restaurante, plato, precio });
 });
 
-// ===============================================
-// 🔥 Procesar pedido (POST /checkout)
-// ===============================================
 app.post("/checkout", async (req, res) => {
   try {
     const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot } = req.body;
 
-    // 1️⃣ Crear o buscar usuario
+    // Crear o buscar usuario
     const userResult = await pool.query(
       `INSERT INTO usuarios (nombre, email, direccion)
        VALUES ($1, $2, $3)
@@ -89,7 +80,7 @@ app.post("/checkout", async (req, res) => {
 
     const usuarioId = userResult.rows[0].id;
 
-    // 2️⃣ Buscar ID del restaurante por slug
+    // Buscar ID del restaurante
     const restResult = await pool.query(
       `SELECT id FROM restaurantes WHERE slug = $1`,
       [restauranteId]
@@ -97,7 +88,7 @@ app.post("/checkout", async (req, res) => {
 
     const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
 
-    // 3️⃣ Insertar orden
+    // Crear la orden
     const orderResult = await pool.query(
       `INSERT INTO ordenes (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
@@ -107,7 +98,7 @@ app.post("/checkout", async (req, res) => {
         nombre,
         direccion,
         restaurante_id,
-        restauranteId, // slug textual
+        restauranteId,
         pedido,
         new Date(),
         scheduleDate || "Hoy",
@@ -117,7 +108,7 @@ app.post("/checkout", async (req, res) => {
 
     const ordenId = orderResult.rows[0].id;
 
-    // 4️⃣ Buscar plato y agregar detalle de la orden
+    // Buscar el plato
     const platoResult = await pool.query(
       `SELECT id, precio FROM platos WHERE nombre = $1 LIMIT 1`,
       [pedido]
@@ -132,7 +123,7 @@ app.post("/checkout", async (req, res) => {
       );
     }
 
-    // 5️⃣ Mostrar página de éxito
+    // Render de éxito
     res.render("success", {
       nombre,
       direccion,
@@ -147,6 +138,68 @@ app.post("/checkout", async (req, res) => {
   } catch (err) {
     console.error("🔥 Error procesando pedido:", err);
     res.status(500).render("error", { mensaje: "Error interno al procesar el pedido" });
+  }
+});
+
+// ===============================================
+// 📡 API REST - Endpoints
+// ===============================================
+
+// ✅ Obtener lista de restaurantes
+app.get("/api/restaurantes", (req, res) => {
+  res.json(restaurantes);
+});
+
+// ✅ Crear una nueva orden
+app.post("/api/ordenes", async (req, res) => {
+  try {
+    const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot } = req.body;
+
+    const userResult = await pool.query(
+      `INSERT INTO usuarios (nombre, email, direccion)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion
+       RETURNING id`,
+      [nombre, `${nombre.toLowerCase()}@correo.com`, direccion]
+    );
+
+    const usuarioId = userResult.rows[0].id;
+
+    const restResult = await pool.query(
+      `SELECT id FROM restaurantes WHERE slug = $1`,
+      [restauranteId]
+    );
+
+    const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
+
+    const orderResult = await pool.query(
+      `INSERT INTO ordenes (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       RETURNING id`,
+      [
+        usuarioId,
+        nombre,
+        direccion,
+        restaurante_id,
+        restauranteId,
+        pedido,
+        new Date(),
+        scheduleDate || "Hoy",
+        scheduleSlot || "Inmediato"
+      ]
+    );
+
+    const ordenId = orderResult.rows[0].id;
+
+    res.json({
+      success: true,
+      message: "Orden registrada exitosamente",
+      orderId: ordenId
+    });
+
+  } catch (err) {
+    console.error("🔥 Error procesando API orden:", err);
+    res.status(500).json({ success: false, message: "Error interno al procesar la orden" });
   }
 });
 
