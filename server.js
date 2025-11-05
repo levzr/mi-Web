@@ -140,6 +140,8 @@ app.post("/checkout", async (req, res) => {
       scheduleDate,
       scheduleSlot,
       fecha: new Date().toISOString(),
+      restaurante: restauranteId,
+      restaurante_slug: restauranteId
     });
 
   } catch (err) {
