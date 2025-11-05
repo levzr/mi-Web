@@ -1,13 +1,11 @@
 import pkg from 'pg';
-import dotenv from 'dotenv';
-dotenv.config();
-
 const { Pool } = pkg;
 
+// Conexión directa sin dotenv
 export const pool = new Pool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: 5432,
+  host: 'localhost',        
+  user: 'pedidos_user',     //usuario de PostgreSQL
+  password: '1234', //contraseña
+  database: 'pedidoshn',
+  port: 5432
 });
