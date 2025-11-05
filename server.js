@@ -1,16 +1,16 @@
 // ======================================================
-// 🧠 PedidosHN - Servidor Express + EJS
+// 🧠 PedidosHN - Servidor Express + EJS + PostgreSQL
 // Descripción: Backend principal de pedidos o entregas para restaurantes
 // Puerto: 3000
 // ======================================================
 
 import express from "express";
 import path from "path";
-import fs from "fs-extra";
 import { fileURLToPath } from "url";
 import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
+import { pool } from "./db.js"; // <-- Conexión a PostgreSQL
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,7 +23,6 @@ const PORT = process.env.PORT || 3000;
 // ======================================================
 const DATA_PATH = path.join(__dirname, "data");
 const REST_PATH = path.join(DATA_PATH, "restaurantes.json");
-const ORD_PATH = path.join(DATA_PATH, "ordenes.json");
 
 // ======================================================
 // ⚙️ CONFIGURACIÓN BASE
@@ -36,7 +35,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
 
-// ⚙️ Helmet configurado correctamente (sin bloquear CSS o imágenes locales)
 app.use(
   helmet({
     contentSecurityPolicy: false,
@@ -58,46 +56,26 @@ app.use((req, res, next) => {
 });
 
 // ======================================================
-// 🔧 FUNCIONES AUXILIARES
-// ======================================================
-const loadJSON = (filePath) => {
-  try {
-    const data = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(data);
-  } catch (err) {
-    console.error(`❌ Error leyendo ${filePath}:`, err.message);
-    return [];
-  }
-};
-
-const saveJSON = async (filePath, data) => {
-  try {
-    await fs.writeJson(filePath, data, { spaces: 2 });
-  } catch (err) {
-    console.error(`❌ Error guardando ${filePath}:`, err.message);
-  }
-};
-
-// ======================================================
 // 🌐 RUTAS PRINCIPALES
 // ======================================================
 
 // 🏠 Página principal
-app.get("/", (req, res) => {
-  const restaurantes = loadJSON(REST_PATH);
+app.get("/", async (req, res) => {
+  // Por ahora restaurantes desde JSON
+  const restaurantes = JSON.parse(await import(REST_PATH, { assert: { type: "json" } }).then(m => m.default));
   res.render("home", { restaurantes });
 });
 
 // 🍴 Lista de restaurantes
-app.get("/restaurantes", (req, res) => {
-  const restaurantes = loadJSON(REST_PATH);
+app.get("/restaurantes", async (req, res) => {
+  const restaurantes = JSON.parse(await import(REST_PATH, { assert: { type: "json" } }).then(m => m.default));
   res.render("restaurantes", { restaurantes });
 });
 
 // 📋 Carta individual
-app.get("/restaurantes/:id", (req, res) => {
+app.get("/restaurantes/:id", async (req, res) => {
   try {
-    const restaurantes = loadJSON(REST_PATH);
+    const restaurantes = JSON.parse(await import(REST_PATH, { assert: { type: "json" } }).then(m => m.default));
     const restaurante = restaurantes.find(r => String(r.id) === req.params.id);
 
     if (!restaurante) {
@@ -107,11 +85,9 @@ app.get("/restaurantes/:id", (req, res) => {
       });
     }
 
-    // Asegurar compatibilidad: si usas "platos" en el JSON
     restaurante.menu = restaurante.platos || [];
 
     res.render("carta", { restaurante });
-
   } catch (error) {
     console.error("🔥 Error al cargar restaurante:", error);
     res.status(500).render("error", {
@@ -121,15 +97,13 @@ app.get("/restaurantes/:id", (req, res) => {
   }
 });
 
-
 // 🧾 Formulario de checkout
 app.get("/checkout", (req, res) => {
   const { restaurante, plato, precio } = req.query;
   res.render("checkout", { restaurante, plato, precio });
 });
 
-
-// ✅ Procesar pedido
+// ✅ Procesar pedido usando PostgreSQL
 app.post("/checkout", async (req, res) => {
   try {
     const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot } = req.body;
@@ -141,22 +115,27 @@ app.post("/checkout", async (req, res) => {
       });
     }
 
-    const ordenes = loadJSON(ORD_PATH);
-    const nuevaOrden = {
-      id: `ORD-${Date.now()}`,
-      nombre: nombre.trim(),
-      direccion: direccion.trim(),
+    const query = `
+      INSERT INTO ordenes(nombre, direccion, restaurante_id, pedido, fecha, schedule_date, schedule_slot)
+      VALUES($1,$2,$3,$4,$5,$6,$7)
+      RETURNING *;
+    `;
+
+    const values = [
+      nombre.trim(),
+      direccion.trim(),
       restauranteId,
       pedido,
-      fecha: new Date().toLocaleString("es-HN"),
-      scheduleDate: scheduleDate || "Hoy",
-      scheduleSlot: scheduleSlot || "Inmediato",
-    };
+      new Date(),
+      scheduleDate || "Hoy",
+      scheduleSlot || "Inmediato"
+    ];
 
-    ordenes.push(nuevaOrden);
-    await saveJSON(ORD_PATH, ordenes);
+    const result = await pool.query(query, values);
+    const nuevaOrden = result.rows[0];
 
     res.render("success", { orden: nuevaOrden });
+
   } catch (error) {
     console.error("🔥 Error procesando pedido:", error);
     res.status(500).render("error", {
@@ -169,8 +148,25 @@ app.post("/checkout", async (req, res) => {
 // ======================================================
 // 📡 API REST
 // ======================================================
-app.get("/api/restaurantes", (req, res) => res.json(loadJSON(REST_PATH)));
-app.get("/api/ordenes", (req, res) => res.json(loadJSON(ORD_PATH)));
+app.get("/api/restaurantes", async (req, res) => {
+  try {
+    const restaurantes = JSON.parse(await import(REST_PATH, { assert: { type: "json" } }).then(m => m.default));
+    res.json(restaurantes);
+  } catch (err) {
+    console.error("🔥 Error obteniendo restaurantes:", err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+app.get("/api/ordenes", async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM ordenes ORDER BY fecha DESC;');
+    res.json(result.rows);
+  } catch (err) {
+    console.error("🔥 Error obteniendo ordenes:", err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
 
 // ======================================================
 // ❌ MANEJO DE ERRORES
