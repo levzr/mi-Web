@@ -3,8 +3,8 @@ const { Pool } = pkg;
 
 export const pool = new Pool({
   host: 'localhost',
-  user: 'pedidos_user',
+  user: 'postgres',     
   password: '1234',
-  database: 'pedidoshn',
+  database: 'postgres',    
   port: 5432
 });
