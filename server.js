@@ -105,20 +105,20 @@ app.post("/checkout", async (req, res) => {
     }
 
     const query = `
-      INSERT INTO ordenes(nombre, direccion, restaurante_id, pedido, fecha, schedule_date, schedule_slot)
-      VALUES($1,$2,$3,$4,$5,$6,$7)
-      RETURNING *;
-    `;
+  INSERT INTO ordenes(nombre, direccion, restaurante_slug, pedido, fecha, schedule_date, schedule_slot)
+  VALUES($1,$2,$3,$4,$5,$6,$7)
+  RETURNING *;
+`;
 
-    const values = [
-      nombre.trim(),
-      direccion.trim(),
-      restauranteId,
-      pedido,
-      new Date(),
-      scheduleDate || "Hoy",
-      scheduleSlot || "Inmediato"
-    ];
+  const values = [
+    nombre.trim(),
+    direccion.trim(),
+    restauranteId,
+    pedido,
+    new Date(),
+    scheduleDate || "Hoy",
+    scheduleSlot || "Inmediato"
+  ];
 
     const result = await pool.query(query, values);
     const nuevaOrden = result.rows[0];
