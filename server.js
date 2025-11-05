@@ -25,10 +25,9 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Variables globales disponibles en todas las vistas
+// Variable global disponible en todas las vistas
 app.use((req, res, next) => {
-  res.locals.siteName = "PedidosHN";
-  res.locals.currentYear = new Date().getFullYear();
+  res.locals.siteName = "PedidosHN"; // 👈 Nombre del sitio
   next();
 });
 
@@ -50,7 +49,7 @@ try {
 // Ruta principal
 // ===============================================
 app.get("/", (req, res) => {
-  res.render("home", { ...res.locals, restaurantes });
+  res.render("home", { restaurantes });
 });
 
 // ===============================================
@@ -59,12 +58,9 @@ app.get("/", (req, res) => {
 app.get("/restaurantes/:slug", (req, res) => {
   const restaurante = restaurantes.find((r) => r.id === req.params.slug);
   if (!restaurante) {
-    return res.status(404).render("error", { 
-      ...res.locals,
-      mensaje: "Restaurante no encontrado" 
-    });
+    return res.status(404).render("error", { mensaje: "Restaurante no encontrado" });
   }
-  res.render("restaurantes", { ...res.locals, restaurante });
+  res.render("restaurantes", { restaurante });
 });
 
 // ===============================================
@@ -72,7 +68,7 @@ app.get("/restaurantes/:slug", (req, res) => {
 // ===============================================
 app.get("/checkout", (req, res) => {
   const { restaurante, plato, precio } = req.query;
-  res.render("checkout", { ...res.locals, restaurante, plato, precio });
+  res.render("checkout", { restaurante, plato, precio });
 });
 
 // ===============================================
@@ -111,7 +107,7 @@ app.post("/checkout", async (req, res) => {
         nombre,
         direccion,
         restaurante_id,
-        restauranteId,
+        restauranteId, // slug textual
         pedido,
         new Date(),
         scheduleDate || "Hoy",
@@ -138,7 +134,6 @@ app.post("/checkout", async (req, res) => {
 
     // 5️⃣ Mostrar página de éxito
     res.render("success", {
-      ...res.locals,
       nombre,
       direccion,
       pedido,
@@ -149,21 +144,8 @@ app.post("/checkout", async (req, res) => {
 
   } catch (err) {
     console.error("🔥 Error procesando pedido:", err);
-    res.status(500).render("error", { 
-      ...res.locals,
-      mensaje: "Error interno al procesar el pedido" 
-    });
+    res.status(500).render("error", { mensaje: "Error interno al procesar el pedido" });
   }
-});
-
-// ===============================================
-// Ruta por defecto (404)
-// ===============================================
-app.use((req, res) => {
-  res.status(404).render("error", { 
-    ...res.locals,
-    mensaje: "Página no encontrada" 
-  });
 });
 
 // ===============================================
