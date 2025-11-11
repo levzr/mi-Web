@@ -142,7 +142,7 @@ app.post("/api/login", async (req, res) => {
 
     req.session.user = { id: user.id, nombre: user.nombre, email: user.email };
 
-    res.redirect("/http://18.220.165.141:3000"); 
+    res.redirect("/restaurantes"); 
   } catch (err) {
     console.error("🔥 Error en /api/login:", err);
     res
