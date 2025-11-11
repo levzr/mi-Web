@@ -152,10 +152,12 @@ app.post("/api/login", async (req, res) => {
 });
 
 // Logout
-app.get("/api/logout", (req, res) => {
+app.post("/api/logout", (req, res) => {
   req.session.destroy((err) => {
-    if (err) return res.status(500).json({ success: false, error: "Error cerrando sesión" });
-    res.redirect("/") ({ success: true, message: "Sesión cerrada correctamente" });
+    if (err) {
+      return res.status(500).json({ success: false, error: "Error cerrando sesión" });
+    }
+    res.redirect("/");
   });
 });
 
