@@ -130,7 +130,7 @@ app.post("/api/login", async (req, res) => {
       id: user.id,
       nombre: user.nombre,
       email: user.email,
-      es_admin: user.es_admin
+      es_admin: user.es_admin === true || user.es_admin === 't' 
     };
     console.log('Usuario en sesión:', req.session.user);
     res.redirect("/");
