@@ -1,7 +1,7 @@
 <%- include('parcial/header', { siteName: siteName }) %>
 
 <section class="container" style="max-width:400px;margin:auto;">
-  <h2 style="color:#222d3b;">Registro</h2>
+  <h2 style="color:#ffffff;">Registro</h2>
   <form action="/api/register" method="POST" style="display:flex;flex-direction:column;gap:15px;">
     <label for="nombre" style="color:#ffffff;">Nombre</label>
     <input type="text" name="nombre" id="nombre" required class="input" style="padding:12px;border:1px solid #ced6e0;border-radius:5px;">
@@ -15,9 +15,9 @@
     <label for="direccion" style="color:#ffffff;">Dirección</label>
     <input type="text" name="direccion" id="direccion" class="input" style="padding:12px;border:1px solid #ced6e0;border-radius:5px;">
 
-    <button type="submit" class="btn-primary" style="margin-top:12px;background:#1abc9c;color:#fff;border:none;padding:18px 0;font-size:1.2em;border-radius:5px;cursor:pointer;font-weight:600;width:100%;">Registrar</button>
+    <button type="submit" class="btn-primary" style="margin-top:12px;background:#1abc9c;color:#222d3b;border:none;padding:18px 0;font-size:1.2em;border-radius:5px;cursor:pointer;font-weight:600;width:100%;">Registrar</button>
   </form>
-  <p style="margin-top:10px;color:#ffffff;">¿Ya tienes cuenta? <a href="/login" style="color:#1abc9c;">Inicia sesión</a></p>
+  <p style="margin-top:10px;color:#ffffff(0, 0%, 100%);">¿Ya tienes cuenta? <a href="/login" style="color:#1abc9c;">Inicia sesión</a></p>
 </section>
 
 <%- include('parcial/footer', { siteName: siteName }) %>
