@@ -11,6 +11,8 @@ import pgSession from "connect-pg-simple";
 import bcrypt from "bcrypt";
 import { pool } from "./db.js";
 import fs from "fs";
+import methodOverride from 'method-override';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +24,7 @@ const PgSession = pgSession(session);
 // ===============================================
 // Configuración del servidor
 // ===============================================
+app.use(methodOverride('_method'));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
@@ -90,6 +93,12 @@ app.get("/checkout", (req, res) => {
   const { restaurante, plato, precio } = req.query;
   res.render("checkout", { restaurante, plato, precio });
 });
+
+app.get('/admin/usuarios', requireAdmin, async (req, res) => {
+  const resultado = await pool.query('SELECT id, nombre, email, direccion, es_admin FROM usuarios');
+  res.render('admin_usuarios', { users: resultado.rows });
+});
+
 
 // ===============================================
 // API: REGISTRO / LOGIN / LOGOUT
@@ -173,7 +182,7 @@ app.put('/api/usuarios/:id', requireAdmin, async (req, res) => {
 });
 app.delete('/api/usuarios/:id', requireAdmin, async (req, res) => {
   await pool.query('DELETE FROM usuarios WHERE id = $1', [req.params.id]);
-  res.json({ success: true, message: 'Usuario eliminado' });
+  res.redirect('/admin/usuarios');
 });
 app.put('/api/usuarios/:id/password', requireAdmin, async (req, res) => {
   const { password } = req.body;
