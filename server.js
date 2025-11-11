@@ -88,7 +88,7 @@ app.get("/checkout", (req, res) => {
 });
 
 // ===============================================
-// 🔥 API: REGISTRO / LOGIN / LOGOUT
+// API: REGISTRO / LOGIN / LOGOUT
 // ===============================================
 
 // Registro
@@ -110,10 +110,12 @@ app.post("/api/register", async (req, res) => {
       [nombre, email, hashedPassword, direccion || ""]
     );
 
-    res.json({ success: true, message: "Usuario registrado correctamente" });
+    res.redirect("/login");
   } catch (err) {
     console.error("⚠️ Error en /api/register:", err);
-    res.status(500).json({ success: false, error: "Error registrando usuario" });
+    res
+      .status(500)
+      .render("register", { error: "Error registrando usuario" });
   }
 });
 
@@ -140,14 +142,12 @@ app.post("/api/login", async (req, res) => {
 
     req.session.user = { id: user.id, nombre: user.nombre, email: user.email };
 
-    res.json({
-      success: true,
-      message: "Inicio de sesión exitoso",
-      user: req.session.user,
-    });
+    res.redirect("/http://18.220.165.141:3000"); 
   } catch (err) {
     console.error("🔥 Error en /api/login:", err);
-    res.status(500).json({ success: false, error: "Error iniciando sesión" });
+    res
+      .status(500)
+      .render("login", { error: "Error iniciando sesión" });
   }
 });
 

@@ -1,4 +1,3 @@
-// Pequeñas mejoras UX
 document.addEventListener('click', (e) => {
   const q = e.target.closest('[data-copy]');
   if(!q) return;
