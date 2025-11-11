@@ -29,7 +29,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Sesiones
 app.use(
   session({
     store: new PgSession({
@@ -43,13 +42,20 @@ app.use(
   })
 );
 
-// Variables globales
 app.use((req, res, next) => {
   res.locals.siteName = "PedidosHN";
   res.locals.currentYear = new Date().getFullYear();
   res.locals.user = req.session.user || null;
   next();
 });
+
+// Middleware administrador
+function requireAdmin(req, res, next) {
+  if (req.session.user && req.session.user.es_admin) {
+    return next();
+  }
+  return res.status(403).json({ success: false, error: "Solo administradores" });
+}
 
 // ===============================================
 // Cargar datos JSON locales
@@ -76,9 +82,7 @@ app.get("/register", (req, res) => res.render("register"));
 app.get("/restaurantes/:slug", (req, res) => {
   const restaurante = restaurantes.find((r) => r.id === req.params.slug);
   if (!restaurante)
-    return res
-      .status(404)
-      .render("error", { mensaje: "Restaurante no encontrado" });
+    return res.status(404).render("error", { mensaje: "Restaurante no encontrado" });
   res.render("restaurantes", { restaurante });
 });
 
@@ -95,27 +99,19 @@ app.get("/checkout", (req, res) => {
 app.post("/api/register", async (req, res) => {
   try {
     const { nombre, email, password, direccion } = req.body;
-
     if (!nombre || !email || !password)
-      return res
-        .status(400)
-        .json({ success: false, error: "Faltan campos obligatorios" });
-
+      return res.status(400).render("register", { error: "Faltan campos obligatorios" });
     const hashedPassword = await bcrypt.hash(password, 10);
-
     await pool.query(
-      `INSERT INTO usuarios (nombre, email, password, direccion)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO usuarios (nombre, email, password, direccion, es_admin)
+       VALUES ($1, $2, $3, $4, FALSE)
        ON CONFLICT (email) DO NOTHING`,
       [nombre, email, hashedPassword, direccion || ""]
     );
-
     res.redirect("/login");
   } catch (err) {
     console.error("⚠️ Error en /api/register:", err);
-    res
-      .status(500)
-      .render("register", { error: "Error registrando usuario" });
+    res.status(500).render("register", { error: "Error registrando usuario" });
   }
 });
 
@@ -123,53 +119,76 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    const result = await pool.query("SELECT * FROM usuarios WHERE email = $1", [
-      email,
-    ]);
+    const result = await pool.query("SELECT * FROM usuarios WHERE email = $1", [email]);
     const user = result.rows[0];
-
     if (!user)
-      return res
-        .status(401)
-        .json({ success: false, error: "Usuario no encontrado" });
-
+      return res.status(401).render("login", { error: "Usuario no encontrado" });
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword)
-      return res
-        .status(401)
-        .json({ success: false, error: "Contraseña incorrecta" });
-
-    req.session.user = { id: user.id, nombre: user.nombre, email: user.email };
-
-    res.redirect("/"); 
+      return res.status(401).render("login", { error: "Contraseña incorrecta" });
+    req.session.user = {
+      id: user.id,
+      nombre: user.nombre,
+      email: user.email,
+      es_admin: user.es_admin
+    };
+    res.redirect("/");
   } catch (err) {
     console.error("🔥 Error en /api/login:", err);
-    res
-      .status(500)
-      .render("login", { error: "Error iniciando sesión" });
+    res.status(500).render("login", { error: "Error iniciando sesión" });
   }
 });
 
-// Logout
+// Logout GET y POST
+app.get("/api/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) return res.status(500).json({ success: false, error: "Error cerrando sesión" });
+    res.redirect("/login");
+  });
+});
 app.post("/api/logout", (req, res) => {
   req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ success: false, error: "Error cerrando sesión" });
-    }
-    res.redirect("/");
+    if (err) return res.status(500).json({ success: false, error: "Error cerrando sesión" });
+    res.redirect("/login");
   });
 });
 
 // ===============================================
-// 🌐 API DE RESTAURANTES Y ÓRDENES
+// API DE USUARIOS (SOLO PARA ADMIN)
+// ===============================================
+app.get('/api/usuarios', requireAdmin, async (req, res) => {
+  const result = await pool.query('SELECT id, nombre, email, direccion, es_admin FROM usuarios');
+  res.json({ success: true, users: result.rows });
+});
+app.get('/api/usuarios/:id', requireAdmin, async (req, res) => {
+  const result = await pool.query('SELECT id, nombre, email, direccion, es_admin FROM usuarios WHERE id = $1', [req.params.id]);
+  if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+  res.json({ success: true, user: result.rows[0] });
+});
+app.put('/api/usuarios/:id', requireAdmin, async (req, res) => {
+  const { nombre, direccion } = req.body;
+  await pool.query('UPDATE usuarios SET nombre = $1, direccion = $2 WHERE id = $3', [nombre, direccion, req.params.id]);
+  res.json({ success: true, message: 'Usuario actualizado' });
+});
+app.delete('/api/usuarios/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM usuarios WHERE id = $1', [req.params.id]);
+  res.json({ success: true, message: 'Usuario eliminado' });
+});
+app.put('/api/usuarios/:id/password', requireAdmin, async (req, res) => {
+  const { password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await pool.query('UPDATE usuarios SET password = $1 WHERE id = $2', [hashedPassword, req.params.id]);
+  res.json({ success: true, message: 'Contraseña actualizada' });
+});
+
+// ===============================================
+// API DE RESTAURANTES Y ÓRDENES
 // ===============================================
 app.get("/api/restaurantes", (req, res) => res.json(restaurantes));
 
 app.post("/api/ordenes", async (req, res) => {
   try {
     const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot } = req.body;
-
     const userResult = await pool.query(
       `INSERT INTO usuarios (nombre, email, direccion)
        VALUES ($1, $2, $3)
@@ -177,16 +196,12 @@ app.post("/api/ordenes", async (req, res) => {
        RETURNING id`,
       [nombre, `${nombre.toLowerCase()}@correo.com`, direccion]
     );
-
     const usuarioId = userResult.rows[0].id;
-
     const restResult = await pool.query(
       `SELECT id FROM restaurantes WHERE slug = $1`,
       [restauranteId]
     );
-
     const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
-
     const orderResult = await pool.query(
       `INSERT INTO ordenes (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
@@ -203,7 +218,6 @@ app.post("/api/ordenes", async (req, res) => {
         scheduleSlot || "Inmediato",
       ]
     );
-
     res.status(201).json({
       success: true,
       message: "Orden registrada exitosamente",
@@ -225,7 +239,6 @@ app.get("/api/ordenes", async (req, res) => {
       LEFT JOIN restaurantes r ON o.restaurante_id = r.id
       ORDER BY o.fecha DESC
     `);
-
     res.json({ success: true, total: result.rows.length, data: result.rows });
   } catch (err) {
     console.error("🔥 Error al obtener órdenes:", err.message);
@@ -241,4 +254,5 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PedidosHN corriendo en: http://0.0.0.0:${PORT}`);
   console.log("===================================================");
 });
+
 
