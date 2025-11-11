@@ -1,23 +1,23 @@
 <%- include('parcial/header', { siteName: siteName }) %>
 
 <section class="container" style="max-width:400px;margin:auto;">
-  <h2>Registro</h2>
-  <form action="/api/register" method="POST">
-    <label>Nombre</label>
-    <input type="text" name="nombre" required class="input">
+  <h2 style="color:#222d3b;">Registro</h2>
+  <form action="/api/register" method="POST" style="display:flex;flex-direction:column;gap:15px;background:#f6f9fb;padding:24px 18px;border-radius:16px;box-shadow:0 2px 10px rgba(34,45,59,0.06);">
+    <label for="nombre" style="color:#34495e;">Nombre</label>
+    <input type="text" name="nombre" id="nombre" required class="input" style="padding:12px;border:1px solid #ced6e0;border-radius:5px;">
 
-    <label>Email</label>
-    <input type="email" name="email" required class="input">
+    <label for="email" style="color:#34495e;">Email</label>
+    <input type="email" name="email" id="email" required class="input" style="padding:12px;border:1px solid #ced6e0;border-radius:5px;">
 
-    <label>Contraseña</label>
-    <input type="password" name="password" required class="input">
+    <label for="password" style="color:#34495e;">Contraseña</label>
+    <input type="password" name="password" id="password" required class="input" style="padding:12px;border:1px solid #ced6e0;border-radius:5px;">
 
-    <label>Dirección</label>
-    <input type="text" name="direccion" class="input">
+    <label for="direccion" style="color:#34495e;">Dirección</label>
+    <input type="text" name="direccion" id="direccion" class="input" style="padding:12px;border:1px solid #ced6e0;border-radius:5px;">
 
-    <button type="submit" class="btn-primary">Registrar</button>
+    <button type="submit" class="btn-primary" style="margin-top:12px;background:#1abc9c;color:#fff;border:none;padding:18px 0;font-size:1.2em;border-radius:5px;cursor:pointer;font-weight:600;width:100%;">Registrar</button>
   </form>
-  <p>¿Ya tienes cuenta? <a href="/login">Inicia sesión</a></p>
+  <p style="margin-top:10px;color:#34495e;">¿Ya tienes cuenta? <a href="/login" style="color:#1abc9c;">Inicia sesión</a></p>
 </section>
 
 <%- include('parcial/footer', { siteName: siteName }) %>
