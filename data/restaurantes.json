@@ -85,11 +85,11 @@
   },
   {
     "id": "",
-    "nombre": "Hacienda Real Honduras",
+    "nombre": "Megadelicias",
     "categoria": "Familiar / Gourmet",
     "rating": 4.5,
     "tiempo": "30-45 min",
-    "imagen": "/imgs/haciendareal.jpg",
+    "imagen": "/imgs/megadelicias.jpg",
     "platos": [
       {
         "nombre": "Chiken Fingers",
