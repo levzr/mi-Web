@@ -36,7 +36,7 @@
     <% if (user) { %>
       <span>👋 Hola, <%= user.nombre %></span>
       <form action="/api/logout" method="POST" style="display:inline;">
-        <button type="submit" class="btn-ghost">Cerrar sesión</button>
+        <button type="submit" class="btn-ghost" style="border-radius: 6; "> Cerrar sesión</button>
       </form>
     <% } else { %>
       <a href="/login" class="btn-ghost">Iniciar sesión</a>
