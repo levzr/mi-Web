@@ -257,6 +257,46 @@ app.get("/api/ordenes", async (req, res) => {
 });
 
 // ===============================================
+// API DE CONTACTOS
+// ===============================================
+// Crear mensaje de contacto (público)
+app.post('/api/contactos', async (req, res) => {
+  const { nombre, email, telefono, mensaje } = req.body;
+  await pool.query(
+    'INSERT INTO contactos (nombre, email, telefono, mensaje) VALUES ($1, $2, $3, $4)',
+    [nombre, email, telefono, mensaje]
+  );
+  res.json({ success: true, message: '¡Gracias por contactarnos!' });
+});
+
+// Listar todos los mensajes (solo admin)
+app.get('/api/contactos', requireAdmin, async (req, res) => {
+  const resultado = await pool.query('SELECT * FROM contactos ORDER BY fecha DESC');
+  res.json({ success: true, contactos: resultado.rows });
+});
+
+// Ver mensaje individual (solo admin)
+app.get('/api/contactos/:id', requireAdmin, async (req, res) => {
+  const resultado = await pool.query('SELECT * FROM contactos WHERE id = $1', [req.params.id]);
+  if (resultado.rows.length === 0)
+    return res.status(404).json({ success: false, error: 'No encontrado' });
+  res.json({ success: true, contacto: resultado.rows[0] });
+});
+
+// Eliminar mensaje (solo admin)
+app.delete('/api/contactos/:id', requireAdmin, async (req, res) => {
+  await pool.query('DELETE FROM contactos WHERE id = $1', [req.params.id]);
+  res.json({ success: true, message: 'Mensaje eliminado' });
+});
+// 
+app.get('/contacto', (req, res) => {
+  res.render('contacto');
+});
+
+
+
+
+// ===============================================
 // Servidor corriendo
 // ===============================================
 app.listen(PORT, "0.0.0.0", () => {

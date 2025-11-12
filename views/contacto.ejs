@@ -1,0 +1,12 @@
+<%- include('parcial/header') %>
+<section style="max-width:400px;margin:2rem auto;padding:2rem;background:#f6f9fb;border-radius:16px;">
+  <h2>Contacto</h2>
+  <form action="/api/contactos" method="POST" class="contact-form">
+    <input name="nombre" required placeholder="Nombre completo" class="input" />
+    <input name="email" type="email" placeholder="Correo electrónico" class="input" />
+    <input name="telefono" placeholder="Teléfono" class="input" />
+    <textarea name="mensaje" required placeholder="Mensaje" class="input"></textarea>
+    <button type="submit" class="btn-primary">Enviar</button>
+  </form>
+</section>
+<%- include('parcial/footer') %>
