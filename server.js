@@ -266,7 +266,7 @@ app.post('/api/contactos', async (req, res) => {
     'INSERT INTO contactos (nombre, email, telefono, mensaje) VALUES ($1, $2, $3, $4)',
     [nombre, email, telefono, mensaje]
   );
-  res.json({ success: true, message: '¡Gracias por contactarnos!' });
+  res.render({'¡Gracias por contactarnos!'});
 });
 
 // Listar todos los mensajes (solo admin)
