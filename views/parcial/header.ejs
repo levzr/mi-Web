@@ -18,9 +18,12 @@
     <span class="brand-name">PedidosHN</span>
   </a>
   
-  <!-- Solo admins enlace-->
+  <!-- Pestaña Contacto -->
+  <a href="/contacto" class="nav-link">Contacto</a>
+
+  <!-- Solo admins enlace -->
   <% if (user && user.es_admin) { %>
-    <a href="/admin/usuarios" class="nav-link" class="btn-danger"> Usuarios</a>
+    <a href="/admin/usuarios" class="nav-link btn-danger">Usuarios</a>
   <% } %>
   
   <div class="nav-actions">
@@ -34,20 +37,8 @@
       <a href="/register" class="btn-primary">Registrarse</a>
     <% } %>
   </div>
-
-    <!-- Pestana Contactos -->
-<a href="/" class="brand">
-    <img src="/imgs/logo.png" alt="PedidosHN" width="34" height="34">
-    <span class="brand-name">PedidosHN</span>
-  </a>
-  <a href="/contacto" class="nav-link">Contacto</a> 
-  <% if (user && user.es_admin) { %>
-    <a href="/admin/usuarios" class="nav-link">Usuarios</a>
-  <% } %>
-  <div class="nav-actions">
-  </div>
-
 </nav>
+
 
 
 
