@@ -1,11 +1,11 @@
 <%- include('parcial/header') %>
 
-<section style="max-width:900px;margin:2rem auto;padding:2rem;background:#f6f9fb;border-radius:18px;box-shadow:0 2px 16px rgba(40,44,52,0.08);">
-  <h2 style="color:#222d3b;margin-bottom:1.2em;">Lista de usuarios</h2>
+<section>
+  <h2 style="color:#ffffff;margin-bottom:1.2em;">Lista de usuarios</h2>
   <div style="overflow-x:auto;">
     <table class="usuarios-table" style="width:100%;border-collapse:collapse;">
       <thead>
-        <tr style="background:#e3e7ed;">
+        <tr>
           <th style="padding:12px 7px;">ID</th>
           <th style="padding:12px 7px;">Nombre</th>
           <th style="padding:12px 7px;">Email</th>
@@ -16,7 +16,7 @@
       </thead>
       <tbody>
         <% users.forEach(user => { %>
-          <tr style="background:#fff;">
+          <tr>
             <td style="text-align:center;"><%= user.id %></td>
             <td><%= user.nombre %></td>
             <td><%= user.email %></td>
