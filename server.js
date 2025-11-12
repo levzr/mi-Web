@@ -286,9 +286,10 @@ app.get('/api/contactos/:id', requireAdmin, async (req, res) => {
 // Eliminar mensaje (solo admin)
 app.delete('/api/contactos/:id', requireAdmin, async (req, res) => {
   await pool.query('DELETE FROM contactos WHERE id = $1', [req.params.id]);
-  res.json({ success: true, message: 'Mensaje eliminado' });
+  res.redirect('/admin/contacto' );
 });
-//
+
+///
 app.get('/contacto', (req, res) => {
   res.render('contacto');
 });
