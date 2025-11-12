@@ -26,6 +26,12 @@
     <a href="/admin/usuarios" class="nav-link btn-danger">Usuarios</a>
   <% } %>
   
+  <!-- Solo admins enlace Contactos -->
+
+  <% if (user && user.es_admin) { %>
+  <a href="/admin/contactos" class="nav-link">Mensajes</a>
+<% } %>
+  
   <div class="nav-actions">
     <% if (user) { %>
       <span>👋 Hola, <%= user.nombre %></span>
@@ -38,11 +44,7 @@
     <% } %>
   </div>
   
-  <!-- Solo admins enlace Contactos -->
-
-  <% if (user && user.es_admin) { %>
-  <a href="/admin/contactos" class="nav-link">Mensajes</a>
-<% } %>
+  
 
 </nav>
 
