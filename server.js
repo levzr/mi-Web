@@ -89,9 +89,13 @@ app.get("/restaurantes/:slug", (req, res) => {
   res.render("restaurantes", { restaurante });
 });
 
+app.post('/checkout', async (req, res) => {
+
 app.get("/checkout", (req, res) => {
   const { restaurante, plato, precio } = req.query;
   res.render("checkout", { restaurante, plato, precio });
+});
+res.render('graciasp');
 });
 
 app.get('/admin/usuarios', requireAdmin, async (req, res) => {
