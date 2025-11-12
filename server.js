@@ -266,7 +266,7 @@ app.post('/api/contactos', async (req, res) => {
     'INSERT INTO contactos (nombre, email, telefono, mensaje) VALUES ($1, $2, $3, $4)',
     [nombre, email, telefono, mensaje]
   );
-  res.render({'¡Gracias por contactarnos!'});
+  res.render('gracias');
 });
 
 // Listar todos los mensajes (solo admin)
@@ -288,7 +288,7 @@ app.delete('/api/contactos/:id', requireAdmin, async (req, res) => {
   await pool.query('DELETE FROM contactos WHERE id = $1', [req.params.id]);
   res.json({ success: true, message: 'Mensaje eliminado' });
 });
-// 
+//
 app.get('/contacto', (req, res) => {
   res.render('contacto');
 });
