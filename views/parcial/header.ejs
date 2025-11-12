@@ -21,7 +21,7 @@
   <!-- Pestaña Contacto -->
   <a href="/contacto" class="nav-link">Contacto</a>
 
-  <!-- Solo admins enlace -->
+  <!-- Solo admins enlace Usuarios -->
   <% if (user && user.es_admin) { %>
     <a href="/admin/usuarios" class="nav-link btn-danger">Usuarios</a>
   <% } %>
@@ -37,6 +37,13 @@
       <a href="/register" class="btn-primary" style="border-radius: 4;">Registrarse</a>
     <% } %>
   </div>
+  
+  <!-- Solo admins enlace Contactos -->
+
+  <% if (user && user.es_admin) { %>
+  <a href="/admin/contactos" class="nav-link">Mensajes</a>
+<% } %>
+
 </nav>
 
 

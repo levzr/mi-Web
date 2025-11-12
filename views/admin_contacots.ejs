@@ -1,0 +1,39 @@
+<%- include('parcial/header') %>
+
+<section style="max-width:900px;margin:2rem auto;padding:2rem;background:#1a2433;border-radius:18px;box-shadow:0 2px 16px rgba(40,44,52,0.08);">
+  <h2 style="color:#7bed9f;margin-bottom:1.2em;">Mensajes de Contacto</h2>
+  <div style="overflow-x:auto;">
+    <table class="contactos-table" style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#e3e7ed;">
+          <th style="padding:12px;">ID</th>
+          <th style="padding:12px;">Nombre</th>
+          <th style="padding:12px;">Correo</th>
+          <th style="padding:12px;">Teléfono</th>
+          <th style="padding:12px;">Mensaje</th>
+          <th style="padding:12px;">Fecha</th>
+          <th style="padding:12px;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% contactos.forEach(c => { %>
+          <tr style="background:#fff;">
+            <td style="text-align:center;"><%= c.id %></td>
+            <td><%= c.nombre %></td>
+            <td><%= c.email %></td>
+            <td><%= c.telefono %></td>
+            <td><%= c.mensaje %></td>
+            <td style="font-size:.98em;color:#64748b;"><%= new Date(c.fecha).toLocaleString() %></td>
+            <td style="text-align:center;">
+              <form style="display:inline;" method="POST" action="/api/contactos/<%= c.id %>?_method=DELETE" onsubmit="return confirm('¿Eliminar este mensaje?');">
+                <button type="submit" class="btn-danger" style="padding:7px 18px;border-radius:5px;border:none;background:#e74c3c;color:#fff;font-weight:600;cursor:pointer;">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%- include('parcial/footer') %>

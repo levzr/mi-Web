@@ -292,6 +292,11 @@ app.delete('/api/contactos/:id', requireAdmin, async (req, res) => {
 app.get('/contacto', (req, res) => {
   res.render('contacto');
 });
+// Vista de administradores
+app.get('/admin/contactos', requireAdmin, async (req, res) => {
+  const resultado = await pool.query('SELECT * FROM contactos ORDER BY fecha DESC');
+  res.render('admin_contactos', { contactos: resultado.rows });
+});
 
 
 
