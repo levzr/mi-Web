@@ -1,11 +1,11 @@
 <%- include('parcial/header') %>
 
 <section style="max-width:900px;margin:2rem auto;">
-  <h2 style="color:#7bed9f;margin-bottom:1.2em;">Mensajes de Contacto</h2>
+  <h2 style="color:#7bed9f;margin-bottom:1.2em;">Mensajes de Contactanos</h2>
   <div style="overflow-x:auto;">
     <table class="contactos-table" style="width:100%;border-collapse:collapse;">
       <thead>
-        <tr style="background:#e3e7ed;">
+        <tr>
           <th style="padding:12px;">ID</th>
           <th style="padding:12px;">Nombre</th>
           <th style="padding:12px;">Correo</th>
@@ -17,7 +17,7 @@
       </thead>
       <tbody>
         <% contactos.forEach(c => { %>
-          <tr style="background:#fff;">
+          <tr>
             <td style="text-align:center;"><%= c.id %></td>
             <td><%= c.nombre %></td>
             <td><%= c.email %></td>
