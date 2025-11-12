@@ -238,3 +238,17 @@ img{display:block;max-width:100%}
 .btn-confirmar:hover {
   background: linear-gradient(135deg, #34d399, #059669);
 }
+
+/* ====== Efecto hover para botones ====== */
+.btn-primary, .btn-ghost, .btn-danger {
+  transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
+}
+
+.btn-primary:hover, .btn-ghost:hover, .btn-danger:hover {
+  transform: translateY(-3px) scale(1.07);
+  box-shadow: 0 6px 18px 2px rgba(16,185,129,0.22);
+  filter: brightness(1.13);
+}
+
+
+
