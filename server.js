@@ -89,14 +89,24 @@ app.get("/restaurantes/:slug", (req, res) => {
   res.render("restaurantes", { restaurante });
 });
 
-app.post('/checkout', async (req, res) => {
-
+// Ruta checkout
 app.get("/checkout", (req, res) => {
   const { restaurante, plato, precio } = req.query;
   res.render("checkout", { restaurante, plato, precio });
 });
-res.render('graciasp');
+
+// Ruta confirma el pedido
+app.post("/checkout", async (req, res) => {
+  try {
+    console.log("Pedido recibido:", req.body);
+
+    res.render("graciasp");
+  } catch (error) {
+    console.error("Error al procesar el pedido:", error);
+    res.status(500).send("Error al procesar el pedido.");
+  }
 });
+
 
 app.get('/admin/usuarios', requireAdmin, async (req, res) => {
   const resultado = await pool.query('SELECT id, nombre, email, direccion, es_admin FROM usuarios');
