@@ -26,7 +26,7 @@
             <td style="font-size:.98em;color:#64748b;"><%= new Date(c.fecha).toLocaleString() %></td>
             <td style="text-align:center;">
               <form style="display:inline;" method="POST" action="/api/contactos/<%= c.id %>?_method=DELETE" onsubmit="return confirm('¿Eliminar este mensaje?');">
-                <button type="submit" class="btn-danger" style="padding:7px 18px;border-radius:5px;border:none;background:#e74c3c;color:#fff;font-weight:600;cursor:pointer;">Eliminar</button>
+                <button type="submit" class="btn-danger" style="padding:7px 18px;border-radius:5px;border:bottom 10px;background:#e74c3c;color:#fff;font-weight:600;cursor:pointer;">Eliminar</button>
               </form>
             </td>
           </tr>
