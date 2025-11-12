@@ -27,11 +27,15 @@
   <% } %>
   
   <!-- Solo admins enlace Contactos -->
-
   <% if (user && user.es_admin) { %>
   <a href="/admin/contactos" class="nav-link">Mensajes</a>
 <% } %>
-  
+    
+<!-- Chekout -->
+<a href="/checkout" class="nav-link">Finalizar Pedido</a>
+
+<!-- Login, register, logout -->
+
   <div class="nav-actions">
     <% if (user) { %>
       <span>👋 Hola, <%= user.nombre %></span>
