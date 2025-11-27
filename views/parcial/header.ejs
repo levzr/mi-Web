@@ -18,6 +18,12 @@
     <span class="brand-name">PedidosHN</span>
   </a>
   
+  <% if (user && user.es_admin) { %>
+    <span style="margin-left:16px;color:#22c55e;font-weight:600;">
+      Estás en modo administrador
+    </span>
+  <% } %>
+  
   <!-- Pestaña Contacto -->
   <a href="/contacto" class="nav-link">Contacto</a>
 
