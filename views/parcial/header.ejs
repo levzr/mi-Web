@@ -36,6 +36,12 @@
 <!-- Chekout -->
 <a href="/checkout" class="nav-link">Finalizar Pedido</a>
 
+<% if (user && user.es_admin) { %>
+    <span style="margin-left:16px;color:#1abc9c;font-weight:600;">
+      Usuario administrador
+    </span>
+  <% } %>
+
 <!-- Login, register, logout -->
 
   <div class="nav-actions">
@@ -50,10 +56,5 @@
     <% } %>
   </div>
 
-  <% if (user && user.es_admin) { %>
-    <span style="margin-left:16px;color:#1abc9c;font-weight:600;">
-      Usuario administrador
-    </span>
-  <% } %>
 
 </nav>
