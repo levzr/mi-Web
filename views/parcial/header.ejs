@@ -18,11 +18,6 @@
     <span class="brand-name">PedidosHN</span>
   </a>
   
-  <% if (user && user.es_admin) { %>
-    <span style="margin-left:16px;color:#22c55e;font-weight:600;">
-      Estás en modo administrador
-    </span>
-  <% } %>
   
   <!-- Pestaña Contacto -->
   <a href="/contacto" class="nav-link">Contacto</a>
@@ -30,7 +25,7 @@
   <!-- Solo admins enlace Usuarios -->
   <% if (user && user.es_admin) { %>
     <a href="/admin/usuarios" class="nav-link btn-danger">Usuarios</a>
-    
+
   <% } %>
   
   <!-- Solo admins enlace Contactos -->
@@ -54,11 +49,11 @@
       <a href="/register" class="btn-primary" style="border-radius: 6;">Registrarse</a>
     <% } %>
   </div>
-  
-  
+
+  <% if (user && user.es_admin) { %>
+    <span style="margin-left:16px;color:#22c55e;font-weight:600;">
+      Usuario administrador
+    </span>
+  <% } %>
 
 </nav>
-
-
-
-
