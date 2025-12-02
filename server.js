@@ -13,7 +13,6 @@ import { pool } from "./db.js";
 import fs from "fs";
 import methodOverride from 'method-override';
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -101,57 +100,57 @@ app.post("/checkout", async (req, res) => {
     const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot, precio } = req.body;
 
     // 1. Validaciones básicas de formulario
-if (!nombre || !direccion || !pedido || !restauranteId || !scheduleDate || !scheduleSlot) {
-  return res.status(400).render("checkout", {
-    restaurante: restauranteId,
-    plato: pedido,
-    precio: precio || "0",
-    error: "Todos los campos son obligatorios",
-  });
-}
+    if (!nombre || !direccion || !pedido || !restauranteId || !scheduleDate || !scheduleSlot) {
+      return res.status(400).render("checkout", {
+        restaurante: restauranteId,
+        plato: pedido,
+        precio: precio || "0",
+        error: "Todos los campos son obligatorios",
+      });
+    }
 
-// 2. Determinar usuario_id
-let usuarioId = null;
-if (req.session.user) {
-  usuarioId = req.session.user.id;
-} else {
-  const userResult = await pool.query(
-    `INSERT INTO usuarios (nombre, email, direccion)
-     VALUES ($1, $2, $3)
-     ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion
-     RETURNING id`,
-    [nombre, `${nombre.toLowerCase()}@correo.com`, direccion]
-  );
-  usuarioId = userResult.rows[0].id;
-}
+    // 2. Determinar usuario_id
+    let usuarioId = null;
+    if (req.session.user) {
+      usuarioId = req.session.user.id;
+    } else {
+      const userResult = await pool.query(
+        `INSERT INTO usuarios (nombre, email, direccion)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion
+         RETURNING id`,
+        [nombre, `${nombre.toLowerCase()}@correo.com`, direccion]
+      );
+      usuarioId = userResult.rows[0].id;
+    }
 
-// 3. Buscar restaurante por slug
-const restResult = await pool.query(
-  `SELECT id FROM restaurantes WHERE slug = $1`,
-  [restauranteId]
-);
-const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
+    // 3. Buscar restaurante por slug
+    const restResult = await pool.query(
+      `SELECT id FROM restaurantes WHERE slug = $1`,
+      [restauranteId]
+    );
+    const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
 
-// 4. Insertar la orden
-await pool.query(
-  `INSERT INTO ordenes 
-   (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot)
-   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-  [
-    usuarioId,
-    nombre,
-    direccion,
-    restaurante_id,
-    restauranteId,
-    pedido,
-    new Date(),
-    scheduleDate || "Hoy",
-    scheduleSlot || "Inmediato",
-  ]
-);
+    // 4. Insertar la orden
+    await pool.query(
+      `INSERT INTO ordenes 
+       (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [
+        usuarioId,
+        nombre,
+        direccion,
+        restaurante_id,
+        restauranteId,
+        pedido,
+        new Date(),
+        scheduleDate || "Hoy",
+        scheduleSlot || "Inmediato",
+      ]
+    );
 
-// 5. Mostrar pantalla de gracias
-res.render("graciasp");
+    // 5. Mostrar pantalla de gracias
+    res.render("graciasp");
   } catch (error) {
     console.error("Error al procesar el pedido:", error);
     res.status(500).render("checkout", {
@@ -163,6 +162,10 @@ res.render("graciasp");
   }
 });
 
+app.get('/admin/usuarios', requireAdmin, async (req, res) => {
+  const resultado = await pool.query('SELECT id, nombre, email, direccion, es_admin FROM usuarios');
+  res.render('admin_usuarios', { users: resultado.rows });
+});
 
 // ===============================================
 // API: REGISTRO / LOGIN / LOGOUT
@@ -254,10 +257,15 @@ app.put('/api/usuarios/:id/password', requireAdmin, async (req, res) => {
   await pool.query('UPDATE usuarios SET password = $1 WHERE id = $2', [hashedPassword, req.params.id]);
   res.json({ success: true, message: 'Contraseña actualizada' });
 });
+
+// ===============================================
+// RUTAS DE PEDIDOS ADMIN
+// ===============================================
 app.get("/admin/pedidos", requireAdmin, async (req, res) => {
   const result = await pool.query(`
-    SELECT o.id, o.nombre, o.direccion, o.pedido, o.fecha,
-           o.schedule_date, o.schedule_slot, r.nombre AS restaurante
+    SELECT 
+      o.id, o.nombre, o.direccion, o.pedido, o.fecha,
+      o.schedule_date, o.schedule_slot, r.nombre AS restaurante
     FROM ordenes o
     LEFT JOIN restaurantes r ON o.restaurante_id = r.id
     ORDER BY o.fecha DESC
@@ -266,8 +274,25 @@ app.get("/admin/pedidos", requireAdmin, async (req, res) => {
 });
 
 app.post("/admin/pedidos/:id/delete", requireAdmin, async (req, res) => {
-await pool.query("DELETE FROM ordenes WHERE id = $1", [req.params.id]);
-res.redirect("/admin/pedidos");
+  await pool.query("DELETE FROM ordenes WHERE id = $1", [req.params.id]);
+  res.redirect("/admin/pedidos");
+});
+
+// ===============================================
+// RUTAS DE PEDIDOS (USUARIO)
+// ===============================================
+app.get("/pedidos", async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  const result = await pool.query(
+    `SELECT id, nombre, direccion, pedido, fecha, schedule_date, schedule_slot
+     FROM ordenes
+     WHERE usuario_id = $1
+     ORDER BY fecha DESC`,
+    [req.session.user.id]
+  );
+
+  res.render("pedidos", { pedidos: result.rows });
 });
 
 // ===============================================
@@ -353,6 +378,7 @@ app.get('/api/contactos', requireAdmin, async (req, res) => {
   const resultado = await pool.query('SELECT * FROM contactos ORDER BY fecha DESC');
   res.json({ success: true, contactos: resultado.rows });
 });
+
 // Ver mensaje individual (solo admin)
 app.get('/api/contactos/:id', requireAdmin, async (req, res) => {
   const resultado = await pool.query('SELECT * FROM contactos WHERE id = $1', [req.params.id]);
@@ -360,36 +386,21 @@ app.get('/api/contactos/:id', requireAdmin, async (req, res) => {
     return res.status(404).json({ success: false, error: 'No encontrado' });
   res.json({ success: true, contacto: resultado.rows[0] });
 });
+
 // Eliminar mensaje (solo admin)
 app.delete('/api/contactos/:id', requireAdmin, async (req, res) => {
   await pool.query('DELETE FROM contactos WHERE id = $1', [req.params.id]);
-  res.redirect('/admin/contactos' );
+  res.redirect('/admin/contactos');
 });
-///
+
 app.get('/contacto', (req, res) => {
   res.render('contacto');
 });
+
 // Vista de administradores
 app.get('/admin/contactos', requireAdmin, async (req, res) => {
   const resultado = await pool.query('SELECT * FROM contactos ORDER BY fecha DESC');
   res.render('admin_contactos', { contactos: resultado.rows });
-});
-
-// ===============================================
-// Pedidos
-// ===============================================
-app.get("/mis-pedidos", async (req, res) => {
-  if (!req.session.user) return res.redirect("/login");
-
-  const result = await pool.query(
-    `SELECT id, nombre, direccion, pedido, fecha, schedule_date, schedule_slot
-     FROM ordenes
-     WHERE usuario_id = $1
-     ORDER BY fecha DESC`,
-    [req.session.user.id]
-  );
-
-  res.render("mis_pedidos", { pedidos: result.rows });
 });
 
 // ===============================================
@@ -400,5 +411,3 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PedidosHN corriendo en: http://0.0.0.0:${PORT}`);
   console.log("===================================================");
 });
-
-
