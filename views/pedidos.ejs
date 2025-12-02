@@ -9,6 +9,16 @@
       <ul class="order-list">
         <% pedidos.forEach(p => { %>
           <li class="order-item">
+            <form action="/pedidos/<%= p.id %>/agregar" method="POST" style="display:inline;">
+  <select name="platoId" required>
+    <% /* Aquí cargas tu lista de platos disponibles. Por ahora pon IDs manuales o pásalos desde el backend */ %>
+    <% platos.forEach(plato => { %>
+      <option value="<%= plato.id %>"><%= plato.nombre %></option>
+    <% }) %>
+  </select>
+  <input type="number" name="cantidad" min="1" value="1" required>
+  <button type="submit">Añadir</button>
+</form>
             <p><strong>Pedido:</strong> <%= p.pedido %></p>
             <p><strong>Fecha:</strong> <%= p.fecha.toLocaleString() %></p>
             <p><strong>Entrega:</strong> <%= (p.schedule_date || '') + ' ' + (p.schedule_slot || '') %></p>
