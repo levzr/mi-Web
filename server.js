@@ -167,6 +167,10 @@ app.get('/admin/usuarios', requireAdmin, async (req, res) => {
   res.render('admin_usuarios', { users: resultado.rows });
 });
 
+app.get("/prueba", (req, res) => {
+  res.render("admin_pedidos", { pedidos: [] });
+});
+
 // ===============================================
 // API: REGISTRO / LOGIN / LOGOUT
 // ===============================================
