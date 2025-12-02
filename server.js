@@ -134,8 +134,8 @@ app.post("/checkout", async (req, res) => {
     // 4. Insertar la orden
     await pool.query(
       `INSERT INTO ordenes 
-       (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+   (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot, estado)
+   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'confirmado')`,
       [
         usuarioId,
         nombre,
@@ -290,7 +290,7 @@ app.get("/pedidos", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const pedidosResult = await pool.query(
-    `SELECT id, nombre, direccion, pedido, fecha, schedule_date, schedule_slot
+    `SELECT id, nombre, direccion, pedido, fecha, schedule_date, schedule_slot, estado
      FROM ordenes
      WHERE usuario_id = $1
      ORDER BY fecha DESC`,
@@ -315,10 +315,11 @@ app.post('/pedidos/:id/agregar', async (req, res) => {
 
   // Validar que el pedido pertenezca al usuario
   const pedido = await pool.query(
-    "SELECT * FROM ordenes WHERE id = $1 AND usuario_id = $2",
-    [pedidoId, req.session.user.id]
-  );
-  if (pedido.rows.length === 0) return res.status(403).send("No puedes editar este pedido");
+  "SELECT * FROM ordenes WHERE id = $1 AND usuario_id = $2 AND estado = 'borrador'",
+  [pedidoId, req.session.user.id]
+);
+if (pedido.rows.length === 0) {
+  return res.status(403).send("No puedes editar este pedido");
 
   // Insertar en detalles_orden
   await pool.query(
