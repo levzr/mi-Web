@@ -1,7 +1,8 @@
 <%- include('parcial/header') %>
 
 <section class="admin-container"> <h1>Pedidos (Admin)</h1>
-<% if (pedidos.length === 0) { %>
+<pre><%= JSON.stringify(pedidos, null, 2) %></pre>
+    <% if (pedidos.length === 0) { %>
 <p>No hay pedidos registrados.</p>
 <% } else { %>
 <table class="admin-table">
