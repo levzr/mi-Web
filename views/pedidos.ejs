@@ -4,8 +4,10 @@
   <div class="checkout-card">
     <h1>Mis pedidos</h1>
     <% if (pedidos.length === 0) { %>
-      <p>No tienes pedidos registrados.</p>
-    <% } else { %>
+  <p>No tienes pedidos registrados.</p>
+  <a href="/" class="btn-primary">Realizar pedido</a>
+<% } else { %>
+
       <ul class="order-list">
         <% pedidos.forEach(p => { %>
           <li class="order-item">
