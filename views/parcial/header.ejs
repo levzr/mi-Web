@@ -36,11 +36,6 @@
 <!-- Chekout -->
 <a href="/checkout" class="nav-link">Finalizar Pedido</a>
 
-<% if (user && user.es_admin) { %>
-    <span style="margin-left:16px;color:#1abc9c;font-weight:600;">
-      Usuario Admin
-    </span>
-  <% } %>
   
   <!-- Mis pedidos (solo usuarios logueados, no importa si son admin o no) -->
 <% if (user) { %>
@@ -52,6 +47,12 @@
   <a href="/admin/pedidos" class="nav-link">Pedidos (Admin)</a>
 <% } %>
 
+<% if (user && user.es_admin) { %>
+    <span style="margin-left:16px;color:#1abc9c;font-weight:600;">
+      Usuario Admin
+    </span>
+  <% } %>
+  
 <!-- Login, register, logout -->
 
   <div class="nav-actions">
