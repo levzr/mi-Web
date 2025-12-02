@@ -1,0 +1,40 @@
+<%- include('parcial/header') %>
+
+<section class="admin-container"> <h1>Pedidos (Admin)</h1>
+<% if (pedidos.length === 0) { %>
+<p>No hay pedidos registrados.</p>
+<% } else { %>
+<table class="admin-table">
+<thead>
+<tr>
+<th>ID</th>
+<th>Cliente</th>
+<th>Restaurante</th>
+<th>Pedido</th>
+<th>Fecha</th>
+<th>Entrega</th>
+<th>Acciones</th>
+</tr>
+</thead>
+<tbody>
+<% pedidos.forEach(p => { %>
+<tr>
+<td><%= p.id %></td>
+<td><%= p.nombre %></td>
+<td><%= p.restaurante || '-' %></td>
+<td><%= p.pedido %></td>
+<td><%= p.fecha.toLocaleString() %></td>
+<td><%= (p.schedule_date || '') + ' ' + (p.schedule_slot || '') %></td>
+<td>
+<form action="/admin/pedidos/<%= p.id %>/delete" method="POST" onsubmit="return confirm('¿Eliminar pedido?');">
+<button type="submit" class="btn-danger">Eliminar</button>
+</form>
+</td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+<% } %>
+
+</section>
+<%- include('parcial/footer') %>
