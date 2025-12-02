@@ -135,7 +135,7 @@ app.post("/checkout", async (req, res) => {
     await pool.query(
       `INSERT INTO ordenes 
    (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot, estado)
-   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'confirmado')`,
+   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'borrador')`,
       [
         usuarioId,
         nombre,
@@ -303,7 +303,7 @@ app.get("/pedidos", async (req, res) => {
 
   res.render("pedidos", {
     pedidos: pedidosResult.rows,
-    platos: platosResult.rows
+    platos: platosResult.rows,
   });
 });
 
@@ -330,6 +330,17 @@ app.post('/pedidos/:id/agregar', async (req, res) => {
 
   res.redirect("/pedidos");
 });
+app.post('/pedidos/:id/confirmar', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  await pool.query(
+    `UPDATE ordenes
+     SET estado = 'confirmado'
+     WHERE id = $1 AND usuario_id = $2`,
+    [req.params.id, req.session.user.id]
+  );
+  res.redirect('/pedidos');
+});
+
 
 
 // ===============================================

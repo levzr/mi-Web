@@ -28,6 +28,13 @@
             <p><strong>Entrega:</strong> <%= (p.schedule_date || '') + ' ' + (p.schedule_slot || '') %></p>
           </li>
         <% }) %>
+        <% if (p.estado === 'borrador') { %>
+
+  <form action="/pedidos/<%= p.id %>/confirmar" method="POST" style="margin-top:8px;">
+    <button type="submit">Confirmar este pedido</button>
+  </form>
+<% } %>
+
       </ul>
     <% } %>
   </div>
