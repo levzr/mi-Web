@@ -290,21 +290,15 @@ app.get("/pedidos", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const pedidosResult = await pool.query(
-    `SELECT id, nombre, direccion, pedido, fecha, schedule_date, schedule_slot, estado
-     FROM ordenes
-     WHERE usuario_id = $1
-     ORDER BY fecha DESC`,
-    [req.session.user.id]
-  );
+  `SELECT id, nombre, direccion, pedido, fecha, schedule_date, schedule_slot, estado
+   FROM ordenes
+   WHERE usuario_id = $1
+   ORDER BY fecha DESC`,
+  [req.session.user.id]
+);
+const platosResult = await pool.query(`SELECT id, nombre FROM platos ORDER BY nombre`);
 
-  const platosResult = await pool.query(
-    `SELECT id, nombre FROM platos ORDER BY nombre`
-  );
-
-  res.render("pedidos", {
-    pedidos: pedidosResult.rows,
-    platos: platosResult.rows,
-  });
+res.render("pedidos", { pedidos, platos });
 });
 
 app.post('/pedidos/:id/agregar', async (req, res) => {
