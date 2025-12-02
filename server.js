@@ -277,6 +277,7 @@ app.get("/admin/pedidos", requireAdmin, async (req, res) => {
   res.render("admin_pedidos", { pedidos: result.rows });
 });
 
+
 app.post("/admin/pedidos/:id/delete", requireAdmin, async (req, res) => {
   await pool.query("DELETE FROM ordenes WHERE id = $1", [req.params.id]);
   res.redirect("/admin/pedidos");
