@@ -41,6 +41,16 @@
       Usuario Admin
     </span>
   <% } %>
+  
+  <!-- Mis pedidos (solo usuarios logueados, no importa si son admin o no) -->
+<% if (user) { %>
+  <a href="/mis-pedidos" class="nav-link">Mis pedidos</a>
+<% } %>
+
+<!-- Solo admins: panel de pedidos -->
+<% if (user && user.es_admin) { %>
+  <a href="/admin/pedidos" class="nav-link">Pedidos (Admin)</a>
+<% } %>
 
 <!-- Login, register, logout -->
 
