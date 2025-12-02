@@ -150,7 +150,7 @@ app.post("/checkout", async (req, res) => {
     );
 
     // 5. Mostrar pantalla de gracias
-    res.render("/pedidos");
+    res.render("pedidos");
   } catch (error) {
     console.error("Error al procesar el pedido:", error);
     res.status(500).render("checkout", {
