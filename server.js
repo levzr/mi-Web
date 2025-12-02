@@ -149,8 +149,8 @@ app.post("/checkout", async (req, res) => {
       ]
     );
 
-    // 5. Mostrar pantalla de gracias
-    res.render("pedidos");
+    // 5. Mostrar a mis pedidos
+    res.redirect("/pedidos");
   } catch (error) {
     console.error("Error al procesar el pedido:", error);
     res.status(500).render("checkout", {
@@ -290,15 +290,21 @@ app.get("/pedidos", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const pedidosResult = await pool.query(
-  `SELECT id, nombre, direccion, pedido, fecha, schedule_date, schedule_slot, estado
-   FROM ordenes
-   WHERE usuario_id = $1
-   ORDER BY fecha DESC`,
-  [req.session.user.id]
-);
-const platosResult = await pool.query(`SELECT id, nombre FROM platos ORDER BY nombre`);
+    `SELECT id, nombre, direccion, pedido, fecha, schedule_date, schedule_slot, estado
+     FROM ordenes
+     WHERE usuario_id = $1
+     ORDER BY fecha DESC`,
+    [req.session.user.id]
+  );
 
-res.render("pedidos", { pedidos, platos });
+  const platosResult = await pool.query(
+    `SELECT id, nombre FROM platos ORDER BY nombre`
+  );
+
+  res.render("pedidos", {
+    pedidos: pedidosResult.rows,
+    platos: platosResult.rows,
+  });
 });
 
 app.post('/pedidos/:id/agregar', async (req, res) => {
