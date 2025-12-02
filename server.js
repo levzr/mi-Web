@@ -308,24 +308,24 @@ app.get("/pedidos", async (req, res) => {
 });
 
 app.post('/pedidos/:id/agregar', async (req, res) => {
-  // Validar usuario logueado
   if (!req.session.user) return res.redirect("/login");
+
   const { platoId, cantidad } = req.body;
   const pedidoId = req.params.id;
 
-  // Validar que el pedido pertenezca al usuario
   const pedido = await pool.query(
-  "SELECT * FROM ordenes WHERE id = $1 AND usuario_id = $2 AND estado = 'borrador'",
-  [pedidoId, req.session.user.id]
-);
-if (pedido.rows.length === 0) {
-  return res.status(403).send("No puedes editar este pedido");
+    "SELECT * FROM ordenes WHERE id = $1 AND usuario_id = $2 AND estado = 'borrador'",
+    [pedidoId, req.session.user.id]
+  );
 
-  // Insertar en detalles_orden
+  if (pedido.rows.length === 0) {
+    return res.status(403).send("No puedes editar este pedido");
+  }
+
   await pool.query(
     `INSERT INTO detalles_orden (orden_id, plato_id, cantidad, subtotal)
      VALUES ($1, $2, $3, $4)`,
-    [pedidoId, platoId, cantidad, 0] // Cambia el subtotal según el precio real del plato
+    [pedidoId, platoId, cantidad, 0]
   );
 
   res.redirect("/pedidos");
