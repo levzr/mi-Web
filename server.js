@@ -298,12 +298,22 @@ app.get("/pedidos", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const pedidosResult = await pool.query(
-    `SELECT id, nombre, direccion, fecha, schedule_date, schedule_slot, estado
-     FROM ordenes
-     WHERE usuario_id = $1
-     ORDER BY fecha DESC`,
-    [req.session.user.id]
-  );
+  `SELECT 
+     o.id,
+     o.nombre,
+     o.direccion,
+     o.fecha,
+     o.schedule_date,
+     o.schedule_slot,
+     o.estado,
+     r.nombre AS restaurante_nombre
+   FROM ordenes o
+   LEFT JOIN restaurantes r ON o.restaurante_id = r.id
+   WHERE o.usuario_id = $1
+   ORDER BY o.fecha DESC`,
+  [req.session.user.id]
+);
+
 
   const pedidos = pedidosResult.rows;
 
