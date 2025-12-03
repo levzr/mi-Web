@@ -38,7 +38,7 @@ img{display:block;max-width:100%}
   background:var(--surface);
   box-shadow:0 2px 12px rgba(0,0,0,.5);
   padding:14px 28px;
-  display:flex;align-items:center;justify-content:space-between;gap: 18px;
+  display:flex;align-items:center;justify-content:space-between;gap: 30px;
   border-bottom:1px solid #0d1117;
 }
 .brand{display:flex;align-items:center;gap:10px}
