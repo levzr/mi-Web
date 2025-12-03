@@ -51,7 +51,7 @@ img{display:block;max-width:100%}
 .nav-links{
   display:flex;
   align-items:center;
-  gap:18px;          
+  gap:30px;          
 }
 .nav-link{
   font-size:0.95rem;
