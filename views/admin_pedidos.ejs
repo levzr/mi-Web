@@ -26,6 +26,7 @@
 <td><%= p.pedido %></td>
 <td><%= p.fecha.toLocaleString() %></td>
 <td><%= (p.schedule_date || '') + ' ' + (p.schedule_slot || '') %></td>
+<td><%= p.estado %></td>
 <td>
 <form action="/admin/pedidos/<%= p.id %>/delete" method="POST" onsubmit="return confirm('¿Eliminar pedido?');">
 <button type="submit" class="btn-danger">Eliminar</button>

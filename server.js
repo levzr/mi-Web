@@ -268,12 +268,20 @@ app.put('/api/usuarios/:id/password', requireAdmin, async (req, res) => {
 app.get("/admin/pedidos", requireAdmin, async (req, res) => {
   const result = await pool.query(`
     SELECT 
-      o.id, o.nombre, o.direccion, o.pedido, o.fecha,
-      o.schedule_date, o.schedule_slot, r.nombre AS restaurante
+      o.id,
+      o.nombre,
+      o.direccion,
+      o.pedido,
+      o.fecha,
+      o.schedule_date,
+      o.schedule_slot,
+      o.estado,
+      r.nombre AS restaurante
     FROM ordenes o
     LEFT JOIN restaurantes r ON o.restaurante_id = r.id
     ORDER BY o.fecha DESC
   `);
+
   res.render("admin_pedidos", { pedidos: result.rows });
 });
 
