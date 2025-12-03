@@ -13,18 +13,20 @@
           <li class="order-item" style="margin-bottom:20px;">
 
             <% if (p.estado === 'borrador') { %>
-              <form action="/pedidos/<%= p.id %>/agregar" method="POST" style="display:inline;">
-                <select name="platoId" required>
-                  <% platos.forEach(plato => { %>
-                    <option value="<%= plato.id %>"><%= plato.nombre %></option>
-                  <% }) %>
-                </select>
-                <input type="number" name="cantidad" min="1" value="1" required>
-                <button type="submit">Añadir</button>
-              </form>
+              <div class="pedido-form-row">
+                <form action="/pedidos/<%= p.id %>/agregar" method="POST" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                  <select name="platoId" required>
+                    <% platos.forEach(plato => { %>
+                      <option value="<%= plato.id %>"><%= plato.nombre %></option>
+                    <% }) %>
+                  </select>
+                  <input type="number" name="cantidad" min="1" value="1" required>
+                  <button type="submit" class="btn-primary btn-sm">Añadir</button>
+                </form>
+              </div>
 
-              <form action="/pedidos/<%= p.id %>/confirmar" method="POST" style="margin-top:8px;">
-                <button type="submit">Confirmar este pedido</button>
+              <form action="/pedidos/<%= p.id %>/confirmar" method="POST" class="confirmar-btn">
+                <button type="submit" class="btn-primary btn-sm">Confirmar este pedido</button>
               </form>
             <% } %>
 
@@ -38,7 +40,7 @@
                   <%= d.nombre %> x <%= d.cantidad %> — L <%= (d.precio * d.cantidad).toFixed(2) %>
                   <% if (p.estado === 'borrador') { %>
                     <form action="/pedidos/<%= p.id %>/detalles/<%= d.id %>/eliminar" method="POST" style="display:inline;">
-                      <button type="submit">Quitar</button>
+                      <button type="submit" class="btn-danger btn-xs">Quitar</button>
                     </form>
                   <% } %>
                 </li>
