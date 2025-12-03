@@ -1,39 +1,51 @@
 <%- include('parcial/header') %>
 
-<section style="max-width:440px; margin:48px auto; padding:1.8rem 2rem;">
-  <h2 style="color:#ffffff;font-size:2em;margin-bottom:1.2em;">Contactanos</h2>
-  <p style="margin-bottom:26px;">Tu opinión es muy importante para nosotros. En este espacio puedes dejar tus mensajes de agradecimiento, sugerencias o quejas sobre nuestros servicios.
-Cada comentario nos ayuda a mejorar y ofrecerte una mejor experiencia.</p>
+<section class="container" style="max-width:480px;margin:40px auto;">
+  <h1 style="font-size:2rem;color:#f9fafb;margin-bottom:12px;">Contactanos</h1>
+
+  <p style="color:#cbd5f5;margin-bottom:20px;font-size:0.95rem;line-height:1.5;">
+    Tu opinión es muy importante para nosotros. En este espacio puedes dejar tus mensajes de
+    agradecimiento, sugerencias o quejas sobre nuestros servicios. Cada comentario nos ayuda
+    a mejorar y ofrecerte una mejor experiencia.
+  </p>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <p style="color:#f97373;margin-bottom:12px;"><%= error %></p>
+  <% } %>
+
   <form action="/api/contactos" method="POST" class="contact-form">
-  <input
-    type="text"
-    name="nombre"
-    placeholder="Nombre completo"
-    required
-    minlength="3"
-    pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$"
-    title="Solo letras y espacios, mínimo 3 caracteres.">
-  <input
-    type="email"
-    name="email"
-    placeholder="Correo electrónico"
-    required>
-  <input
-    type="tel"
-    name="telefono"
-    placeholder="Teléfono"
-    pattern="^[0-9]{8,15}$"
-    title="Solo números, entre 8 y 15 dígitos.">
-  <textarea
-    name="mensaje"
-    placeholder="Mensaje"
-    required
-    minlength="10">
-  </textarea>
-
-  <button type="submit" class="btn-primary">Enviar</button>
-</form>
-
+    <input
+      type="text"
+      name="nombre"
+      placeholder="Nombre completo"
+      required
+      minlength="3"
+      pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$"
+      title="Solo letras y espacios, mínimo 3 caracteres."
+    >
+    <input
+      type="email"
+      name="email"
+      placeholder="Correo electrónico"
+      required
+    >
+    <input
+      type="tel"
+      name="telefono"
+      placeholder="Teléfono"
+      pattern="^[0-9]{8,15}$"
+      title="Solo números, entre 8 y 15 dígitos."
+    >
+    <textarea
+      name="mensaje"
+      placeholder="Mensaje"
+      required
+      minlength="10"
+    ></textarea>
+    <button type="submit" class="btn-primary" style="width:100%;margin-top:6px;">
+      Enviar
+    </button>
+  </form>
 </section>
 
 <%- include('parcial/footer') %>
