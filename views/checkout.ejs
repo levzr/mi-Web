@@ -5,36 +5,30 @@
     <h1>Finalizar Pedido</h1>
     <p class="subtitle">Revisa tus datos y confirma tu orden.</p>
 
+    <% if (typeof error !== 'undefined' && error) { %>
+      <p style="color:#f97373;margin-bottom:12px;"><%= error %></p>
+    <% } %>
+
     <form action="/checkout" method="POST" class="checkout-form">
       <!-- Datos del cliente -->
       <div class="form-section">
         <h2>Datos del Cliente</h2>
+
         <input
-          type="text"
-          name="nombre"
-          placeholder="Nombre completo"
-          required
-          minlength="3"
-          pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$"
+          type="text" name="nombre" placeholder="Nombre completo" required
+          minlength="3" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$"
+          title="Solo letras y espacios, mínimo 3 caracteres."
           value="<%= user ? user.nombre : '' %>">
 
         <input
-         type="text"
-         name="direccion"
-         placeholder="Dirección de entrega"
-         required
-         minlength="5"
-         value="<%= user && user.direccion ? user.direccion : '' %>">
+          type="text" name="direccion" placeholder="Dirección de entrega" required
+          minlength="5" value="<%= user && user.direccion ? user.direccion : '' %>">
 
         <input
-         type="tel"
-         name="telefono"
-         placeholder="Teléfono"
-         required
-         pattern="^[0-9]{8,15}$"
-         title="Solo números, entre 8 y 15 dígitos."
-         value="<%= user && user.telefono ? user.telefono : '' %>">
-        </div>
+          type="tel" name="telefono" placeholder="Teléfono" required
+          pattern="^[0-9]{8,15}$" title="Solo números, entre 8 y 15 dígitos."
+          value="<%= user && user.telefono ? user.telefono : '' %>">
+      </div>
 
       <!-- Pedido seleccionado -->
       <div class="form-section">
@@ -46,21 +40,40 @@
         </div>
 
         <!-- Campos ocultos para enviar datos -->
-        <input type="hidden" name="restauranteId" value="<%= restaurante || '' %>"> <input type="hidden" name="pedido" value="<%= plato || '' %>"> <input type="hidden" name="precio" value="<%= precio || '0' %>">
+        <input type="hidden" name="restauranteId" value="<%= restaurante || '' %>">
+        <input type="hidden" name="pedido" value="<%= plato || '' %>">
+        <input type="hidden" name="precio" value="<%= precio || '0' %>">
       </div>
 
       <!-- Programar entrega -->
       <div class="form-section">
         <h2>Programar Entrega</h2>
-        <label>Fecha:</label>
-        <input type="date" name="scheduleDate" required>
 
-        <label>Hora:</label>
-        <select name="scheduleSlot" required>
-          <option value="Inmediato">Inmediato</option>
-          <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
-          <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
-          <option value="6:00 PM - 8:00 PM">6:00 PM - 8:00 PM</option>
+        <label for="scheduleDate">Fecha:</label>
+        <input
+          type="date"
+          id="scheduleDate"
+          name="scheduleDate"
+          required
+        >
+
+        <label for="scheduleSlot">Hora:</label>
+        <select id="scheduleSlot" name="scheduleSlot" required>
+          <option value="">Selecciona una franja</option>
+          <option value="Inmediato">Inmediato (40–60 min)</option>
+          <option value="10:00-11:00">10:00 – 11:00</option>
+          <option value="11:00-12:00">11:00 – 12:00</option>
+          <option value="12:00-13:00">12:00 – 13:00</option>
+          <option value="13:00-14:00">13:00 – 14:00</option>
+          <option value="14:00-15:00">14:00 – 15:00</option>
+          <option value="15:00-16:00">15:00 – 16:00</option>
+          <option value="16:00-17:00">16:00 – 17:00</option>
+          <option value="17:00-18:00">17:00 – 18:00</option>
+          <option value="18:00-19:00">18:00 – 19:00</option>
+          <option value="19:00-20:00">19:00 – 20:00</option>
+          <option value="20:00-21:00">20:00 – 21:00</option>
+          <option value="21:00-22:00">21:00 – 22:00</option>
+          <option value="22:00-23:00">22:00 – 23:00</option>
         </select>
       </div>
 
@@ -69,5 +82,30 @@
     </form>
   </div>
 </section>
+
+<script>
+  // Limitar fecha: hoy hasta 7 días adelante
+  (function () {
+    const dateInput = document.getElementById('scheduleDate');
+    if (!dateInput) return;
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const minDate = `${yyyy}-${mm}-${dd}`;
+
+    const future = new Date(today);
+    future.setDate(future.getDate() + 7);
+    const yyyyF = future.getFullYear();
+    const mmF = String(future.getMonth() + 1).padStart(2, '0');
+    const ddF = String(future.getDate()).padStart(2, '0');
+    const maxDate = `${yyyyF}-${mmF}-${ddF}`;
+
+    dateInput.min = minDate;
+    dateInput.max = maxDate;
+    dateInput.value = minDate;
+  })();
+</script>
 
 <%- include('parcial/footer') %>

@@ -115,8 +115,15 @@ app.get("/checkout", (req, res) => {
 app.post("/checkout", async (req, res) => {
   try {
     const {
-      nombre, direccion, telefono, restauranteId,pedido,
-      scheduleDate, scheduleSlot, precio} = req.body;
+      nombre,
+      direccion,
+      telefono,
+      restauranteId,
+      pedido,
+      scheduleDate,
+      scheduleSlot,
+      precio
+    } = req.body;
 
     // 1. Validaciones básicas de formulario
     const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$/;
@@ -149,11 +156,47 @@ app.post("/checkout", async (req, res) => {
       });
     }
 
-    // 2. Determinar usuario_id
+    if (!scheduleDate || !scheduleSlot) {
+      return res.status(400).render("checkout", {
+        restaurante: restauranteId,
+        plato: pedido,
+        precio: precio || "0",
+        error: "Selecciona la fecha y la hora aproximada de entrega"
+      });
+    }
+
+    // 2. Validar fecha: entre hoy y hoy + 7 días
+    const selected = new Date(scheduleDate);
+    if (isNaN(selected.getTime())) {
+      return res.status(400).render("checkout", {
+        restaurante: restauranteId,
+        plato: pedido,
+        precio: precio || "0",
+        error: "La fecha seleccionada no es válida"
+      });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const max = new Date(today);
+    max.setDate(max.getDate() + 7);
+
+    if (selected < today || selected > max) {
+      return res.status(400).render("checkout", {
+        restaurante: restauranteId,
+        plato: pedido,
+        precio: precio || "0",
+        error: "La fecha debe ser entre hoy y los próximos 7 días"
+      });
+    }
+
+    // 3. Determinar usuario_id
     let usuarioId = null;
     if (req.session.user) {
       usuarioId = req.session.user.id;
 
+      // opcional: actualizar datos de cuenta con lo que puso aquí
       await pool.query(
         `UPDATE usuarios
          SET direccion = $1, telefono = $2
@@ -161,46 +204,60 @@ app.post("/checkout", async (req, res) => {
         [direccion, telefono, usuarioId]
       );
     } else {
+      // Invitado: crear usuario básico o reutilizar por email si lo pides en checkout
       const userResult = await pool.query(
-        `INSERT INTO usuarios (nombre, email, direccion, telefono)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion, telefono = EXCLUDED.telefono
+        `INSERT INTO usuarios (nombre, direccion, telefono)
+         VALUES ($1, $2, $3)
          RETURNING id`,
-        [nombre, `${nombre.toLowerCase()}@correo.com`, direccion, telefono]
+        [nombre.trim(), direccion.trim(), telefono]
       );
       usuarioId = userResult.rows[0].id;
     }
 
-    // 3. Buscar restaurante por slug
+    // 4. Buscar restaurante por slug
+    let restaurante_id = null;
     const restResult = await pool.query(
       `SELECT id FROM restaurantes WHERE slug = $1`,
       [restauranteId]
     );
-    const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
+    if (restResult.rows.length > 0) {
+      restaurante_id = restResult.rows[0].id;
+    }
 
-    // 4. Validar fecha/hora de entrega (ejemplo: no fecha pasada)
-    const finalScheduleDate = scheduleDate || "Hoy";
-    const finalScheduleSlot = scheduleSlot || "Inmediato";
+    // 5. Normalizar valores de programación
+    const finalScheduleDate = scheduleDate;            // yyyy-mm-dd
+    const finalScheduleSlot = scheduleSlot;            // texto del select
 
-    // 5. Insertar la orden (como ya lo hacías, pero incluyendo telefono si lo guardas en ordenes)
+    // 6. Insertar la orden (estado borrador)
     const orderInsert = await pool.query(
-      `INSERT INTO ordenes 
-       (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot, estado)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'borrador')
+      `INSERT INTO ordenes
+       (usuario_id, nombre, direccion, telefono,
+        restaurante_id, restaurante_slug, pedido,
+        fecha, schedule_date, schedule_slot, estado)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'borrador')
        RETURNING id`,
       [
-        usuarioId, nombre, direccion, restaurante_id, restauranteId, pedido,
+        usuarioId,
+        nombre.trim(),
+        direccion.trim(),
+        telefono,
+        restaurante_id,
+        restauranteId,
+        pedido,
         new Date(),
-        finalScheduleDate,finalScheduleSlot
-      ]);
+        finalScheduleDate,
+        finalScheduleSlot
+      ]
+    );
 
     const ordenId = orderInsert.rows[0].id;
 
-    // 6. Insertar plato inicial en detalles_orden (como ya tienes ahora)
+    // 7. Insertar detalle inicial del pedido
     const platoResult = await pool.query(
       `SELECT id, precio FROM platos WHERE nombre = $1 LIMIT 1`,
       [pedido]
     );
+
     if (platoResult.rows.length > 0) {
       const platoId = platoResult.rows[0].id;
       await pool.query(
@@ -210,7 +267,7 @@ app.post("/checkout", async (req, res) => {
       );
     }
 
-    // 7. Redirigir a Mis pedidos
+    // 8. Redirigir a "Mis pedidos"
     res.redirect("/pedidos");
   } catch (error) {
     console.error("Error al procesar el pedido:", error);
@@ -222,6 +279,7 @@ app.post("/checkout", async (req, res) => {
     });
   }
 });
+
 
 
 // ===============================================
