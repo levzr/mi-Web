@@ -425,6 +425,23 @@ app.post('/pedidos/:id/confirmar', async (req, res) => {
   )
 
   res.redirect('/');
+
+});
+
+// eliminar pedido completo (usuario)
+app.post('/pedidos/:id/eliminar', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+
+  const { id } = req.params;
+
+  // Solo permite borrar pedidos del usuario actual
+  await pool.query(
+    `DELETE FROM ordenes
+     WHERE id = $1 AND usuario_id = $2`,
+    [id, req.session.user.id]
+  );
+
+  res.redirect('/pedidos');
 });
 
 
