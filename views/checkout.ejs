@@ -9,9 +9,32 @@
       <!-- Datos del cliente -->
       <div class="form-section">
         <h2>Datos del Cliente</h2>
-        <input type="text" name="nombre" placeholder="Nombre completo" required>
-        <input type="text" name="direccion" placeholder="Dirección de entrega" required>
-      </div>
+        <input
+          type="text"
+          name="nombre"
+          placeholder="Nombre completo"
+          required
+          minlength="3"
+          pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$"
+          value="<%= user ? user.nombre : '' %>">
+
+        <input
+         type="text"
+         name="direccion"
+         placeholder="Dirección de entrega"
+         required
+         minlength="5"
+         value="<%= user && user.direccion ? user.direccion : '' %>">
+
+        <input
+         type="tel"
+         name="telefono"
+         placeholder="Teléfono"
+         required
+         pattern="^[0-9]{8,15}$"
+         title="Solo números, entre 8 y 15 dígitos."
+         value="<%= user && user.telefono ? user.telefono : '' %>">
+        </div>
 
       <!-- Pedido seleccionado -->
       <div class="form-section">

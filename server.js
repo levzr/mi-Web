@@ -48,6 +48,9 @@ app.use((req, res, next) => {
   res.locals.siteName = "PedidosHN";
   res.locals.currentYear = new Date().getFullYear();
   res.locals.user = req.session.user || null;
+  if (typeof res.locals.currentPage === 'undefined') {
+    res.locals.currentPage = null;
+  }
   next();
 });
 
@@ -104,21 +107,45 @@ app.get("/restaurantes/:slug", (req, res) => {
 // Ruta checkout
 app.get("/checkout", (req, res) => {
   const { restaurante, plato, precio } = req.query;
-  res.render("checkout", { restaurante, plato, precio });
+  res.render("checkout", { restaurante, plato, precio, user: req.session.user || null,
+    currentPage: null });
 });
 
 // Ruta confirma el pedido
 app.post("/checkout", async (req, res) => {
   try {
-    const { nombre, direccion, restauranteId, pedido, scheduleDate, scheduleSlot, precio } = req.body;
+    const {
+      nombre, direccion, telefono, restauranteId,pedido,
+      scheduleDate, scheduleSlot, precio} = req.body;
 
     // 1. Validaciones básicas de formulario
-    if (!nombre || !direccion || !pedido || !restauranteId || !scheduleDate || !scheduleSlot) {
+    const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$/;
+    const telefonoRegex = /^[0-9]{8,15}$/;
+
+    if (!nombre || !direccion || !pedido || !restauranteId) {
       return res.status(400).render("checkout", {
         restaurante: restauranteId,
         plato: pedido,
         precio: precio || "0",
-        error: "Todos los campos son obligatorios",
+        error: "Nombre, dirección y plato son obligatorios"
+      });
+    }
+
+    if (!nombreRegex.test(nombre)) {
+      return res.status(400).render("checkout", {
+        restaurante: restauranteId,
+        plato: pedido,
+        precio: precio || "0",
+        error: "El nombre solo puede tener letras y espacios (mínimo 3 caracteres)"
+      });
+    }
+
+    if (!telefono || !telefonoRegex.test(telefono)) {
+      return res.status(400).render("checkout", {
+        restaurante: restauranteId,
+        plato: pedido,
+        precio: precio || "0",
+        error: "Ingresa un teléfono válido (solo números, 8 a 15 dígitos)"
       });
     }
 
@@ -126,13 +153,20 @@ app.post("/checkout", async (req, res) => {
     let usuarioId = null;
     if (req.session.user) {
       usuarioId = req.session.user.id;
+
+      await pool.query(
+        `UPDATE usuarios
+         SET direccion = $1, telefono = $2
+         WHERE id = $3`,
+        [direccion, telefono, usuarioId]
+      );
     } else {
       const userResult = await pool.query(
-        `INSERT INTO usuarios (nombre, email, direccion)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion
+        `INSERT INTO usuarios (nombre, email, direccion, telefono)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (email) DO UPDATE SET direccion = EXCLUDED.direccion, telefono = EXCLUDED.telefono
          RETURNING id`,
-        [nombre, `${nombre.toLowerCase()}@correo.com`, direccion]
+        [nombre, `${nombre.toLowerCase()}@correo.com`, direccion, telefono]
       );
       usuarioId = userResult.rows[0].id;
     }
@@ -144,37 +178,31 @@ app.post("/checkout", async (req, res) => {
     );
     const restaurante_id = restResult.rows.length > 0 ? restResult.rows[0].id : null;
 
-    // 4. Insertar la orden y obtener su id
+    // 4. Validar fecha/hora de entrega (ejemplo: no fecha pasada)
+    const finalScheduleDate = scheduleDate || "Hoy";
+    const finalScheduleSlot = scheduleSlot || "Inmediato";
+
+    // 5. Insertar la orden (como ya lo hacías, pero incluyendo telefono si lo guardas en ordenes)
     const orderInsert = await pool.query(
       `INSERT INTO ordenes 
        (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot, estado)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'borrador')
        RETURNING id`,
       [
-        usuarioId,
-        nombre,
-        direccion,
-        restaurante_id,
-        restauranteId,
-        pedido,                // texto original, si lo quieres seguir guardando
+        usuarioId, nombre, direccion, restaurante_id, restauranteId, pedido,
         new Date(),
-        scheduleDate || "Hoy",
-        scheduleSlot || "Inmediato",
-      ]
-    );
+        finalScheduleDate,finalScheduleSlot
+      ]);
 
     const ordenId = orderInsert.rows[0].id;
 
-    // 4.1. Buscar el plato por nombre (ajusta según tu modelo de platos)
+    // 6. Insertar plato inicial en detalles_orden (como ya tienes ahora)
     const platoResult = await pool.query(
       `SELECT id, precio FROM platos WHERE nombre = $1 LIMIT 1`,
       [pedido]
     );
-
     if (platoResult.rows.length > 0) {
       const platoId = platoResult.rows[0].id;
-
-      // 4.2. Insertar el plato inicial en detalles_orden
       await pool.query(
         `INSERT INTO detalles_orden (orden_id, plato_id, cantidad)
          VALUES ($1, $2, $3)`,
@@ -182,7 +210,7 @@ app.post("/checkout", async (req, res) => {
       );
     }
 
-    // 5. Redirigir a Mis pedidos (o donde quieras)
+    // 7. Redirigir a Mis pedidos
     res.redirect("/pedidos");
   } catch (error) {
     console.error("Error al procesar el pedido:", error);
@@ -190,10 +218,11 @@ app.post("/checkout", async (req, res) => {
       restaurante: req.body.restauranteId,
       plato: req.body.pedido,
       precio: req.body.precio || "0",
-      error: "Error al procesar el pedido",
+      error: "Error al procesar el pedido"
     });
   }
 });
+
 
 // ===============================================
 // API: REGISTRO / LOGIN / LOGOUT
