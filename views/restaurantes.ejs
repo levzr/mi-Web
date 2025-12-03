@@ -1,34 +1,121 @@
 <%- include('parcial/header') %>
 
-<div class="container">
-  <h2 class="section-title"><%= restaurante.nombre %></h2>
+<section class="container">
+  <!-- Info del restaurante igual que antes -->
 
-  <div class="restaurante-detalle">
-    <img src="<%= restaurante.imagen %>" alt="<%= restaurante.nombre %>" class="restaurante-banner">
-    <p><strong>Categoría:</strong> <%= restaurante.categoria %></p>
-    <p><strong>Valoración:</strong> ⭐ <%= restaurante.rating %> / 5</p>
-    <p><strong>Tiempo estimado:</strong> <%= restaurante.tiempo %></p>
-  </div>
+  <h2 class="menu-title">Menú</h2>
 
-  <h3 class="section-subtitle">Menú</h3>
-  <div class="grid">
-    <% restaurante.platos.forEach(plato => { %>
-      <div class="card">
-        <div class="card-media">
-          <img src="<%= plato.imagen %>" alt="<%= plato.nombre %>">
+  <div class="menu-grid">
+    <% platos.forEach(p => { %>
+      <div class="dish-card">
+        <div class="dish-image">
+          <% if (p.imagen) { %>
+            <img src="<%= p.imagen %>" alt="<%= p.nombre %>">
+          <% } else { %>
+            <img src="/imgs/placeholder-dish.jpg" alt="<%= p.nombre %>">
+          <% } %>
         </div>
-        <div class="card-body">
-          <h4><%= plato.nombre %></h4>
-          <p><%= plato.descripcion %></p>
-          <p><strong>L. <%= plato.precio %></strong></p>
-          <a href="/checkout?restaurante=<%= restaurante.id %>&plato=<%= encodeURIComponent(plato.nombre) %>&precio=<%= plato.precio %>" class="btn-primary">
-            Pedir ahora
-          </a>
+        <div class="dish-info">
+          <h3><%= p.nombre %></h3>
+          <p><%= p.descripcion || '' %></p>
+        </div>
+        <div class="dish-price">
+          L <%= p.precio %>
         </div>
       </div>
     <% }) %>
   </div>
-</div>
+
+  <% if (user && user.es_admin) { %>
+    <hr style="margin:24px 0;border-color:#1f2937;">
+
+    <h2 class="menu-title">Administrar platos</h2>
+
+    <!-- Formulario: nuevo plato -->
+    <form action="/admin/restaurantes/<%= restaurante.id %>/platos" method="POST"
+          style="margin-bottom:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
+      <input type="hidden" name="slug" value="<%= restaurante.slug %>">
+
+      <div style="flex:1 1 160px;">
+        <label>Nombre</label>
+        <input type="text" name="nombre" required
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:2 1 260px;">
+        <label>Descripción</label>
+        <input type="text" name="descripcion"
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:0 0 100px;">
+        <label>Precio</label>
+        <input type="number" name="precio" min="0" step="0.01" required
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:1 1 200px;">
+        <label>Imagen</label>
+        <input type="text" name="imagen" placeholder="/imgs/plato.jpg"
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:0 0 120px;">
+        <button type="submit" class="btn-primary btn-sm" style="margin-top:18px;width:100%;">Añadir plato</button>
+      </div>
+    </form>
+
+    <!-- Tabla simple para editar/eliminar platos -->
+    <div class="admin-pedidos-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Foto</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% platos.forEach(p => { %>
+            <tr>
+              <td>#<%= p.id %></td>
+              <td>
+                <% if (p.imagen) { %>
+                  <img src="<%= p.imagen %>" alt="<%= p.nombre %>"
+                       style="width:60px;height:40px;object-fit:cover;border-radius:6px;">
+                <% } else { %>—<% } %>
+              </td>
+              <td>
+                <form action="/admin/platos/<%= p.id %>/editar" method="POST">
+                  <input type="hidden" name="slug" value="<%= restaurante.slug %>">
+                  <input type="text" name="nombre" value="<%= p.nombre %>"
+                         style="width:100%;padding:4px 6px;border-radius:4px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;font-size:0.85rem;">
+                  <input type="text" name="descripcion" value="<%= p.descripcion || '' %>"
+                         style="width:100%;margin-top:4px;padding:4px 6px;border-radius:4px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;font-size:0.8rem;">
+              </td>
+              <td>
+                  <input type="number" name="precio" min="0" step="0.01" value="<%= p.precio %>"
+                         style="width:90px;padding:4px 6px;border-radius:4px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;font-size:0.85rem;">
+                  <input type="text" name="imagen" value="<%= p.imagen || '' %>"
+                         placeholder="/imgs/plato.jpg"
+                         style="width:100%;margin-top:4px;padding:4px 6px;border-radius:4px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;font-size:0.8rem;">
+              </td>
+              <td style="white-space:nowrap;">
+                  <button type="submit" class="btn-primary btn-xs" style="margin-bottom:4px;">Guardar</button>
+                </form>
+
+                <form action="/admin/platos/<%= p.id %>/eliminar" method="POST"
+                      onsubmit="return confirm('¿Eliminar este plato?');">
+                  <input type="hidden" name="slug" value="<%= restaurante.slug %>">
+                  <button type="submit" class="btn-danger btn-xs">Eliminar</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
 
 <%- include('parcial/footer') %>
+
 

@@ -602,6 +602,36 @@ app.get('/admin/restaurantes', requireAdmin, async (req, res) => {
   });
 });
 
+app.get("/restaurantes/:slug", async (req, res) => {
+  const { slug } = req.params;
+
+  const restResult = await pool.query(
+    `SELECT id, slug, nombre, categoria, rating, tiempo, imagen
+     FROM restaurantes
+     WHERE slug = $1`,
+    [slug]
+  );
+  if (restResult.rows.length === 0) {
+    return res.status(404).render("error", { mensaje: "Restaurante no encontrado" });
+  }
+  const restaurante = restResult.rows[0];
+
+  const platosResult = await pool.query(
+    `SELECT id, nombre, descripcion, precio, imagen
+     FROM platos
+     WHERE restaurante_id = $1
+     ORDER BY id`,
+    [restaurante.id]
+  );
+
+  res.render("restaurantes", {
+    restaurante,
+    platos: platosResult.rows,
+    user: req.session.user || null,
+    currentPage: null
+  });
+});
+
 // Crear restaurante
 app.post('/admin/restaurantes', requireAdmin, async (req, res) => {
   const { nombre, slug, categoria, rating, tiempo, imagen } = req.body;
@@ -639,6 +669,51 @@ app.post('/admin/restaurantes/:id/eliminar', requireAdmin, async (req, res) => {
   res.redirect('/admin/restaurantes');
 });
 
+
+// ===============================================
+// RUTAS DE PLATOS (SOLO ADMIN)
+// ===============================================
+app.post("/admin/restaurantes/:id/platos", requireAdmin, async (req, res) => {
+  const { id } = req.params; // restaurante_id
+  const { nombre, descripcion, precio, imagen } = req.body;
+
+  if (!nombre || !precio) {
+    return res.redirect(`/restaurantes/${req.body.slug || ''}`);
+  }
+
+  await pool.query(
+    `INSERT INTO platos (restaurante_id, nombre, descripcion, precio, imagen)
+     VALUES ($1,$2,$3,$4,$5)`,
+    [id, nombre.trim(), descripcion || "", precio, imagen || ""]
+  );
+
+  res.redirect(`/restaurantes/${req.body.slug}`);
+});
+
+// Editar plato
+app.post("/admin/platos/:platoId/editar", requireAdmin, async (req, res) => {
+  const { platoId } = req.params;
+  const { nombre, descripcion, precio, imagen, slug } = req.body;
+
+  await pool.query(
+    `UPDATE platos
+     SET nombre=$1, descripcion=$2, precio=$3, imagen=$4
+     WHERE id=$5`,
+    [nombre.trim(), descripcion || "", precio, imagen || "", platoId]
+  );
+
+  res.redirect(`/restaurantes/${slug}`);
+});
+
+// Eliminar plato
+app.post("/admin/platos/:platoId/eliminar", requireAdmin, async (req, res) => {
+  const { platoId } = req.params;
+  const { slug } = req.body;
+
+  await pool.query(`DELETE FROM platos WHERE id = $1`, [platoId]);
+
+  res.redirect(`/restaurantes/${slug}`);
+});
 
 
 // ===============================================
