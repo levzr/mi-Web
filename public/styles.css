@@ -411,6 +411,30 @@ img{display:block;max-width:100%}
     justify-content:center;
   }
 }
+/* Contenedor principal de pedidos admin */
+.admin-pedidos-container {
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 0 16px;
+}
+
+/* Título centrado sin card */
+.admin-pedidos-header {
+  margin-bottom: 16px;
+}
+.admin-pedidos-header h1 {
+  font-size: 1.8rem;
+  color: var(--accent);
+}
+
+/* Wrapper para centrar la tabla y dar leve sombra */
+.admin-pedidos-table-wrapper {
+  background: transparent;        /* sin cuadro sólido */
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  overflow: hidden;
+}
+
 /* ====== Tabla admin de pedidos ====== */
 .admin-table {
   width: 100%;
