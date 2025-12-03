@@ -89,196 +89,36 @@ app.get("/", async (req, res) => {
 // ===============================================
 // 🌐 RUTAS WEB (EJS)
 // ===============================================
-app.get("/login", (req, res) => {
-  if (req.session.user) {
-    return res.redirect("/");
-  }
-  res.render("login", { currentPage: "login" });
-});
+app.get("/restaurantes/:slug", async (req, res) => {
+  const { slug } = req.params;
 
-app.get("/register", (req, res) => {
-  if (req.session.user) {
-    return res.redirect("/");
-  }
-  res.render("register", { currentPage: "register" });
-});
-
-app.get("/restaurantes/:slug", (req, res) => {
-  const restaurante = restaurantes.find((r) => r.id === req.params.slug);
-  if (!restaurante)
+  const restResult = await pool.query(
+    `SELECT id, slug, nombre, categoria, rating, tiempo, imagen
+     FROM restaurantes
+     WHERE slug = $1`,
+    [slug]
+  );
+  if (restResult.rows.length === 0) {
     return res.status(404).render("error", { mensaje: "Restaurante no encontrado" });
-  res.render("restaurantes", { restaurante });
-});
-
-// Ruta checkout
-app.get("/checkout", (req, res) => {
-  const { restaurante, plato, precio } = req.query;
-  res.render("checkout", { restaurante, plato, precio, user: req.session.user || null,
-    currentPage: null });
-});
-
-// Ruta confirma el pedido
-app.post("/checkout", async (req, res) => {
-  try {
-    const {
-      nombre, direccion, telefono, restauranteId, pedido, scheduleDate,
-      scheduleSlot, precio} = req.body;
-
-    // 1. Validaciones básicas de formulario
-    const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$/;
-    const telefonoRegex = /^[0-9]{8,15}$/;
-
-    if (!nombre || !direccion || !pedido || !restauranteId) {
-      return res.status(400).render("checkout", {
-        restaurante: restauranteId,
-        plato: pedido,
-        precio: precio || "0",
-        error: "Nombre, dirección y plato son obligatorios"
-      });
-    }
-
-    if (!nombreRegex.test(nombre)) {
-      return res.status(400).render("checkout", {
-        restaurante: restauranteId,
-        plato: pedido,
-        precio: precio || "0",
-        error: "El nombre solo puede tener letras y espacios (mínimo 3 caracteres)"
-      });
-    }
-
-    if (!telefono || !telefonoRegex.test(telefono)) {
-      return res.status(400).render("checkout", {
-        restaurante: restauranteId,
-        plato: pedido,
-        precio: precio || "0",
-        error: "Ingresa un teléfono válido (solo números, 8 a 15 dígitos)"
-      });
-    }
-
-    if (!scheduleDate || !scheduleSlot) {
-      return res.status(400).render("checkout", {
-        restaurante: restauranteId,
-        plato: pedido,
-        precio: precio || "0",
-        error: "Selecciona la fecha y la hora aproximada de entrega"
-      });
-    }
-
-    // 2. Validar fecha: entre hoy y hoy + 7 días
-    const selected = new Date(scheduleDate);
-    if (isNaN(selected.getTime())) {
-      return res.status(400).render("checkout", {
-        restaurante: restauranteId,
-        plato: pedido,
-        precio: precio || "0",
-        error: "La fecha seleccionada no es válida"
-      });
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const max = new Date(today);
-    max.setDate(max.getDate() + 7);
-
-    if (selected < today || selected > max) {
-      return res.status(400).render("checkout", {
-        restaurante: restauranteId,
-        plato: pedido,
-        precio: precio || "0",
-        error: "La fecha debe ser entre hoy y los próximos 7 días"
-      });
-    }
-    const isToday = selected.getTime() === today.getTime();
-
-    if (scheduleSlot === 'Inmediato' && !isToday) {
-      return res.status(400).render("checkout", {
-        restaurante: restauranteId,
-        plato: pedido,
-        precio: precio || "0",
-        error: "La opción Inmediato solo está disponible para hoy. Elegir otro horario"
-      }); 
-    }
-    // 3. Determinar usuario_id
-    let usuarioId = null;
-    if (req.session.user) {
-      usuarioId = req.session.user.id;
-
-      // opcional: actualizar datos de cuenta con lo que puso aquí
-      await pool.query(
-        `UPDATE usuarios
-         SET direccion = $1, telefono = $2
-         WHERE id = $3`,
-        [direccion, telefono, usuarioId]
-      );
-    } else {
-      // Invitado: crear usuario básico o reutilizar por email si lo pides en checkout
-      const userResult = await pool.query(
-        `INSERT INTO usuarios (nombre, direccion, telefono)
-         VALUES ($1, $2, $3)
-         RETURNING id`,
-        [nombre.trim(), direccion.trim(), telefono]
-      );
-      usuarioId = userResult.rows[0].id;
-    }
-
-    // 4. Buscar restaurante por slug
-    let restaurante_id = null;
-    const restResult = await pool.query(
-      `SELECT id FROM restaurantes WHERE slug = $1`,
-      [restauranteId]
-    );
-    if (restResult.rows.length > 0) {
-      restaurante_id = restResult.rows[0].id;
-    }
-
-    // 5. Normalizar valores de programación
-    const finalScheduleDate = scheduleDate;          
-    const finalScheduleSlot = scheduleSlot;            
-
-    // 6. Insertar la orden (estado borrador)
-    const orderInsert = await pool.query(
-      `INSERT INTO ordenes
-       (usuario_id, nombre, direccion, telefono,
-        restaurante_id, restaurante_slug, pedido,
-        fecha, schedule_date, schedule_slot, estado)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'borrador')
-       RETURNING id`,
-      [
-        usuarioId, nombre.trim(), direccion.trim(), telefono,
-        restaurante_id, restauranteId, pedido,
-        new Date(), finalScheduleDate, finalScheduleSlot
-      ]);
-
-    const ordenId = orderInsert.rows[0].id;
-
-    // 7. Insertar detalle inicial del pedido
-    const platoResult = await pool.query(
-      `SELECT id, precio FROM platos WHERE nombre = $1 LIMIT 1`,
-      [pedido]
-    );
-
-    if (platoResult.rows.length > 0) {
-      const platoId = platoResult.rows[0].id;
-      await pool.query(
-        `INSERT INTO detalles_orden (orden_id, plato_id, cantidad)
-         VALUES ($1, $2, $3)`,
-        [ordenId, platoId, 1]
-      );
-    }
-
-    // 8. Redirigir a "Mis pedidos"
-    res.redirect("/pedidos");
-  } catch (error) {
-    console.error("Error al procesar el pedido:", error);
-    res.status(500).render("checkout", {
-      restaurante: req.body.restauranteId,
-      plato: req.body.pedido,
-      precio: req.body.precio || "0",
-      error: "Error al procesar el pedido"
-    });
   }
+  const restaurante = restResult.rows[0];
+
+  const platosResult = await pool.query(
+    `SELECT id, nombre, descripcion, precio, imagen
+     FROM platos
+     WHERE restaurante_id = $1
+     ORDER BY id`,
+    [restaurante.id]
+  );
+
+  res.render("restaurantes", {
+    restaurante,
+    platos: platosResult.rows,
+    user: req.session.user || null,
+    currentPage: null
+  });
 });
+
 
 
 
