@@ -1,39 +1,51 @@
 <%- include('parcial/header') %>
 
-<section style="max-width:900px;margin:2rem auto;">
-  <h2 style="color:#10b981;margin-bottom:1.2em;">Mensajes de Contactanos</h2>
-  <div style="overflow-x:auto;">
-    <table class="admin-table;contactos-table" style="width:100%;border-collapse:collapse;" >
-      <thead>
-        <tr>
-          <th style="padding:12px;">ID</th>
-          <th style="padding:12px;">Nombre</th>
-          <th style="padding:12px;">Correo</th>
-          <th style="padding:12px;">Teléfono</th>
-          <th style="padding:12px;">Mensaje</th>
-          <th style="padding:12px;">Fecha</th>
-          <th style="padding:12px;">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% contactos.forEach(c => { %>
-          <tr>
-            <td style="text-align:center;"><%= c.id %></td>
-            <td><%= c.nombre %></td>
-            <td><%= c.email %></td>
-            <td><%= c.telefono %></td>
-            <td><%= c.mensaje %></td>
-            <td style="font-size:.98em;color:#64748b;"><%= new Date(c.fecha).toLocaleString() %></td>
-            <td style="text-align:center;">
-              <form style="display:inline;" method="POST" action="/api/contactos/<%= c.id %>?_method=DELETE" onsubmit="return confirm('¿Eliminar este mensaje?');">
-                <button type="submit" class="btn-danger" style="padding:7px 18px;border-radius:5px;border:bottom 10px;background:#e74c3c;color:#fff;font-weight:600;cursor:pointer;">Eliminar</button>
-              </form>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+<section class="admin-pedidos-container">
+  <div class="admin-pedidos-header">
+    <h1>Mensajes de Contacto</h1>
   </div>
+
+  <% if (contactos.length === 0) { %>
+    <p>No hay mensajes registrados.</p>
+  <% } else { %>
+    <div class="admin-pedidos-table-wrapper">
+      <table class="admin-table contactos-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Mensaje</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% contactos.forEach(c => { %>
+            <tr>
+              <td style="text-align:center;">#<%= c.id %></td>
+              <td><%= c.nombre %></td>
+              <td><%= c.email %></td>
+              <td><%= c.telefono %></td>
+              <td><%= c.mensaje %></td>
+              <td style="font-size:.9em;color:#cbd5f5;">
+                <%= new Date(c.fecha).toLocaleString() %>
+              </td>
+              <td style="text-align:center;">
+                <form method="POST"
+                      action="/api/contactos/<%= c.id %>?_method=DELETE"
+                      onsubmit="return confirm('¿Eliminar este mensaje?');">
+                  <button type="submit" class="btn-danger btn-xs">Eliminar</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
 </section>
 
 <%- include('parcial/footer') %>
+
