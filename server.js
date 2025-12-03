@@ -415,7 +415,42 @@ app.post('/pedidos/:id/confirmar', async (req, res) => {
 
   res.redirect('/');
 });
+const orderInsert = await pool.query(
+  `INSERT INTO ordenes 
+   (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot, estado)
+   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'borrador')
+   RETURNING id`,
+  [
+    usuarioId,
+    nombre,
+    direccion,
+    restaurante_id,
+    restauranteId,
+    pedido,                // texto original, si lo quieres seguir guardando
+    new Date(),
+    scheduleDate || "Hoy",
+    scheduleSlot || "Inmediato",
+  ]
+);
 
+// 4. Insertar la orden
+const ordenId = orderInsert.rows[0].id;
+
+// 4.1. Buscar el plato por nombre (ajusta según tu modelo)
+const platoResult = await pool.query(
+  `SELECT id, precio FROM platos WHERE nombre = $1 LIMIT 1`,
+  [pedido]
+);
+if (platoResult.rows.length > 0) {
+  const platoId = platoResult.rows[0].id;
+
+  // 4.2. Insertar el plato inicial en detalles_orden
+  await pool.query(
+    `INSERT INTO detalles_orden (orden_id, plato_id, cantidad)
+     VALUES ($1, $2, $3)`,
+    [ordenId, platoId, 1]
+  );
+}
 
 
 // ===============================================
