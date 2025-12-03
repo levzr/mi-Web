@@ -366,7 +366,19 @@ app.post('/pedidos/:pedidoId/detalles/:detalleId/eliminar', async (req, res) => 
 
   const { pedidoId, detalleId } = req.params;
 
-  // Opcional: validar que la orden es del usuario
+  //confirmar pedido
+  app.post('/pedidos/:id/confirmar', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  await pool.query(
+    `UPDATE ordenes
+     SET estado = 'confirmado'
+     WHERE id = $1 AND usuario_id = $2`,
+    [req.params.id, req.session.user.id]
+  );
+  res.redirect('/pedidos');
+});
+
+  //validar pedido del usuario
   await pool.query(
     `DELETE FROM detalles_orden
      WHERE id = $1
