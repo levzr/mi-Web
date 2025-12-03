@@ -84,6 +84,22 @@ app.get("/", async (req, res) => {
   }
 });
 
+// ===============================================
+// VISTAS DE AUTENTICACIÓN
+// ===============================================
+app.get("/login", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/");
+  }
+  res.render("login", { currentPage: "login" });
+});
+
+app.get("/register", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/");
+  }
+  res.render("register", { currentPage: "register" });
+});
 
 
 // ===============================================
