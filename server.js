@@ -570,7 +570,7 @@ app.post('/pedidos/:id/confirmar', async (req, res) => {
     [id, req.session.user.id]
   )
 
-  res.redirect('/');
+  res.redirect('/pedidos');
 
 });
 
