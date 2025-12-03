@@ -576,12 +576,42 @@ app.get("/api/ordenes", async (req, res) => {
 // Crear mensaje de contacto (público)
 app.post('/api/contactos', async (req, res) => {
   const { nombre, email, telefono, mensaje } = req.body;
+
+  const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$/;
+  const telefonoRegex = /^[0-9]{8,15}$/;
+
+  if (!nombre || !email || !mensaje) {
+    return res.status(400).render('contacto', {
+      error: 'Nombre, correo y mensaje son obligatorios.'
+    });
+  }
+
+  if (!nombreRegex.test(nombre)) {
+    return res.status(400).render('contacto', {
+      error: 'El nombre solo puede contener letras y espacios (mínimo 3 caracteres).'
+    });
+  }
+
+  if (telefono && !telefonoRegex.test(telefono)) {
+    return res.status(400).render('contacto', {
+      error: 'El teléfono debe tener solo números (8 a 15 dígitos).'
+    });
+  }
+
+  if (mensaje.trim().length < 10) {
+    return res.status(400).render('contacto', {
+      error: 'El mensaje debe tener al menos 10 caracteres.'
+    });
+  }
+
   await pool.query(
     'INSERT INTO contactos (nombre, email, telefono, mensaje) VALUES ($1, $2, $3, $4)',
-    [nombre, email, telefono, mensaje]
+    [nombre.trim(), email.toLowerCase(), telefono || null, mensaje.trim()]
   );
+
   res.render('gracias');
 });
+
 
 // Listar todos los mensajes (solo admin)
 app.get('/api/contactos', requireAdmin, async (req, res) => {

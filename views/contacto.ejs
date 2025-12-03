@@ -4,13 +4,36 @@
   <h2 style="color:#ffffff;font-size:2em;margin-bottom:1.2em;">Contactanos</h2>
   <p style="margin-bottom:26px;">Tu opinión es muy importante para nosotros. En este espacio puedes dejar tus mensajes de agradecimiento, sugerencias o quejas sobre nuestros servicios.
 Cada comentario nos ayuda a mejorar y ofrecerte una mejor experiencia.</p>
-  <form action="/api/contactos" method="POST" style="display:flex;flex-direction:column;gap:18px;">
-    <input name="nombre" required placeholder="Nombre completo" class="input" style="padding:12px;border-radius:6px;border:1px solid #ccc;background:#222b3a;color:#fff;" />
-    <input name="email" type="email" placeholder="Correo electrónico" class="input" style="padding:12px;border-radius:6px;border:1px solid #ccc;background:#222b3a;color:#fff;" />
-    <input name="telefono" placeholder="Teléfono" class="input" style="padding:12px;border-radius:6px;border:1px solid #ccc;background:#222b3a;color:#fff;" />
-    <textarea name="mensaje" required placeholder="Mensaje" class="input" style="padding:12px;border-radius:6px;min-height:90px;border:1px solid #ccc;background:#222b3a;color:#fff;"></textarea>
-    <button type="submit" class="btn-primary" style="padding:12px;border-radius:6px;background:#1abc9c;color:#fff;font-weight:600;font-size:1.1em;border:none;cursor:pointer;">Enviar</button>
-  </form>
+  <form action="/api/contactos" method="POST" class="contact-form">
+  <input
+    type="text"
+    name="nombre"
+    placeholder="Nombre completo"
+    required
+    minlength="3"
+    pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$"
+    title="Solo letras y espacios, mínimo 3 caracteres.">
+  <input
+    type="email"
+    name="email"
+    placeholder="Correo electrónico"
+    required>
+  <input
+    type="tel"
+    name="telefono"
+    placeholder="Teléfono"
+    pattern="^[0-9]{8,15}$"
+    title="Solo números, entre 8 y 15 dígitos.">
+  <textarea
+    name="mensaje"
+    placeholder="Mensaje"
+    required
+    minlength="10">
+  </textarea>
+
+  <button type="submit" class="btn-primary">Enviar</button>
+</form>
+
 </section>
 
 <%- include('parcial/footer') %>
