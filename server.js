@@ -405,7 +405,7 @@ app.post('/pedidos/:id/confirmar', async (req, res) => {
     [req.params.id, req.session.user.id]
   );
 
-  res.redirect('/pedidos');
+  res.redirect('/');
 });
 
 
