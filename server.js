@@ -426,24 +426,6 @@ app.post('/pedidos/:id/confirmar', async (req, res) => {
 
   res.redirect('/');
 });
-const orderInsert = await pool.query(
-  `INSERT INTO ordenes 
-   (usuario_id, nombre, direccion, restaurante_id, restaurante_slug, pedido, fecha, schedule_date, schedule_slot, estado)
-   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'borrador')
-   RETURNING id`,
-  [
-    usuarioId,
-    nombre,
-    direccion,
-    restaurante_id,
-    restauranteId,
-    pedido,                
-    new Date(),
-    scheduleDate || "Hoy",
-    scheduleSlot || "Inmediato",
-  ]
-);
-
 
 
 
