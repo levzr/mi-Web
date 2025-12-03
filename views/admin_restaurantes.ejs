@@ -1,0 +1,115 @@
+<%- include('parcial/header') %>
+
+<section class="admin-pedidos-container">
+  <div class="admin-pedidos-header">
+    <h1>Restaurantes</h1>
+  </div>
+
+  <!-- Crear nuevo restaurante -->
+  <div class="admin-pedidos-table-wrapper" style="margin-bottom:18px;padding:16px;">
+    <form action="/admin/restaurantes" method="POST"
+          style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
+      <div style="flex:1 1 160px;">
+        <label>Nombre</label>
+        <input type="text" name="nombre" required
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:1 1 140px;">
+        <label>Slug</label>
+        <input type="text" name="slug" required placeholder="hacienda-real"
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:1 1 160px;">
+        <label>Categoría</label>
+        <input type="text" name="categoria" placeholder="Parrilladas / Gourmet"
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:0 0 90px;">
+        <label>Rating</label>
+        <input type="number" name="rating" min="0" max="5" step="0.1" placeholder="4.8"
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:0 0 110px;">
+        <label>Tiempo</label>
+        <input type="text" name="tiempo" placeholder="30-45 min"
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:1 1 200px;">
+        <label>Imagen</label>
+        <input type="text" name="imagen" placeholder="/imgs/haciendareal.jpg"
+               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;">
+      </div>
+      <div style="flex:0 0 120px;">
+        <button type="submit" class="btn-primary btn-sm"
+                style="margin-top:18px;width:100%;">Añadir</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabla de restaurantes -->
+  <div class="admin-pedidos-table-wrapper">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Rating</th>
+          <th>Tiempo</th>
+          <th>Slug</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% restaurantes.forEach(r => { %>
+          <tr>
+            <td>#<%= r.id %></td>
+            <td>
+              <% if (r.imagen) { %>
+                <img src="<%= r.imagen %>" alt="<%= r.nombre %>"
+                     style="width:60px;height:40px;object-fit:cover;border-radius:6px;">
+              <% } else { %>—<% } %>
+            </td>
+            <td>
+              <form action="/admin/restaurantes/<%= r.id %>/editar" method="POST">
+                <input type="text" name="nombre" value="<%= r.nombre %>"
+                       style="width:100%;padding:4px 6px;border-radius:4px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;font-size:0.85rem;">
+            </td>
+            <td>
+                <input type="text" name="categoria" value="<%= r.categoria || '' %>"
+                       style="width:100%;padding:4px 6px;border-radius:4px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;font-size:0.85rem;">
+            </td>
+            <td>
+                <input type="number" name="rating" min="0" max="5" step="0.1"
+                       value="<%= r.rating || '' %>"
+                       style="width:70px;padding:4px 6px;border-radius:4px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;font-size:0.85rem;">
+            </td>
+            <td>
+                <input type="text" name="tiempo" value="<%= r.tiempo || '' %>"
+                       style="width:100%;padding:4px 6px;border-radius:4px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;font-size:0.85rem;">
+            </td>
+            <td>
+                <input type="text" name="slug" value="<%= r.slug %>"
+                       style="width:100%;padding:4px 6px;border-radius:4px;border:1px solid #1f2937;background:#020617;color:#e5e7eb;font-size:0.85rem;">
+                <input type="hidden" name="imagen" value="<%= r.imagen || '' %>">
+            </td>
+            <td style="white-space:nowrap;">
+                <button type="submit" class="btn-primary btn-xs" style="margin-bottom:4px;">
+                  Guardar
+                </button>
+              </form>
+
+              <form action="/admin/restaurantes/<%= r.id %>/eliminar" method="POST"
+                    onsubmit="return confirm('¿Eliminar este restaurante y sus platos relacionados?');">
+                <button type="submit" class="btn-danger btn-xs">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%- include('parcial/footer') %>

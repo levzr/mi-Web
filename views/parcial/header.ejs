@@ -13,67 +13,49 @@
 
   <!-- NAVBAR -->
   <nav class="navbar">
-  <a href="/" class="brand">
-    <img src="/imgs/logo.png" alt="PedidosHN" width="40" height="40">
-    <span class="brand-name">PedidosHN</span>
-  </a>
-  
-  
-  <!-- Pestaña Contacto -->
-  <a href="/contacto" class="nav-link">Contactanos</a>
-
-  <!-- Solo admins enlace Usuarios -->
-  <% if (user && user.es_admin) { %>
-    <a href="/admin/usuarios" class="nav-link">Usuarios</a>
-
-  <% } %>
-  
-  <!-- Solo admins enlace Contactos -->
-  <% if (user && user.es_admin) { %>
-  <a href="/admin/contactos" class="nav-link">Mensajes</a>
-<% } %>
-    
-<!-- Chekout -->
-
-
-  <!-- Mis pedidos (solo usuarios logueados, no importa si son admin o no) -->
-<% if (user) { %>
-  <a href="/pedidos" class="nav-link">Mis pedidos</a>
-<% } %>
-
-<!-- Solo admins: panel de pedidos -->
-<% if (user && user.es_admin) { %>
-  <a href="/admin/pedidos" class="nav-link">Pedidos (Admin)</a>
-<% } %>
-
-<% if (user && user.es_admin) { %>
-    <span style="margin-left:16px;color:#1abc9c;font-weight:600;">
-      Usuario Admin
-    </span>
-  <% } %>
-  
-<!-- Login, register, logout -->
-
-  <div class="nav-actions">
-  <% if (user) { %>
-    <span>👋 Hola, <%= user.nombre %></span>
-    <form action="/api/logout" method="POST" style="display:inline;">
-      <button type="submit" class="btn-ghost" style="border-radius:6px;">Cerrar sesión</button>
-    </form>
-  <% } else { %>
-    <a href="/login"
-       class="<%= currentPage === 'login' ? 'btn-primary' : 'btn-ghost' %>"
-       style="border-radius:6px;">
-      Iniciar sesión
+    <!-- Marca -->
+    <a href="/" class="brand">
+      <img src="/imgs/logo.png" alt="PedidosHN" width="40" height="40">
+      <span class="brand-name">PedidosHN</span>
     </a>
-    <a href="/register"
-       class="<%= currentPage === 'register' ? 'btn-primary' : 'btn-ghost' %>"
-       style="border-radius:6px;">
-      Registrarse
-    </a>
-  <% } %>
-</div>
 
+    <!-- Links principales -->
+    <div class="nav-links">
+      <a href="/contacto" class="nav-link">Contactanos</a>
 
+      <% if (user) { %>
+        <a href="/pedidos" class="nav-link">Mis pedidos</a>
+      <% } %>
 
-</nav>
+      <% if (user && user.es_admin) { %>
+        <a href="/admin/usuarios" class="nav-link">Usuarios</a>
+        <a href="/admin/contactos" class="nav-link">Mensajes</a>
+        <a href="/admin/pedidos" class="nav-link">Pedidos (Admin)</a>
+        <a href="/admin/restaurantes" class="nav-link">Restaurantes</a>
+        <span style="margin-left:16px;color:#1abc9c;font-weight:600;">
+          Usuario Admin
+        </span>
+      <% } %>
+    </div>
+
+    <!-- Login, register, logout -->
+    <div class="nav-actions">
+      <% if (user) { %>
+        <span>👋 Hola, <%= user.nombre %></span>
+        <form action="/api/logout" method="POST" style="display:inline;">
+          <button type="submit" class="btn-ghost" style="border-radius:6px;">Cerrar sesión</button>
+        </form>
+      <% } else { %>
+        <a href="/login"
+           class="<%= currentPage === 'login' ? 'btn-primary' : 'btn-ghost' %>"
+           style="border-radius:6px;">
+          Iniciar sesión
+        </a>
+        <a href="/register"
+           class="<%= currentPage === 'register' ? 'btn-primary' : 'btn-ghost' %>"
+           style="border-radius:6px;">
+          Registrarse
+        </a>
+      <% } %>
+    </div>
+  </nav>

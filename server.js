@@ -375,7 +375,7 @@ app.post("/api/logout", (req, res) => {
 });
 
 // ===============================================
-// API DE USUARIOS (SOLO PARA ADMIN)
+// API DE USUARIOS (SOLO ADMIN)
 // ===============================================
 app.get('/api/usuarios', requireAdmin, async (req, res) => {
   const result = await pool.query('SELECT id, nombre, email, direccion, es_admin FROM usuarios');
@@ -414,7 +414,7 @@ app.get('/admin/usuarios', requireAdmin, async (req, res) => {
 });
 
 // ===============================================
-// RUTAS DE PEDIDOS ADMIN
+// RUTAS DE PEDIDOS (SOLO ADMIN)
 // ===============================================
 app.get("/admin/pedidos", requireAdmin, async (req, res) => {
   const result = await pool.query(`
@@ -499,10 +499,6 @@ app.get("/pedidos", async (req, res) => {
   });
 });
 
-
-
-
-
 // añadir plato
 app.post('/pedidos/:id/agregar', async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
@@ -574,6 +570,58 @@ app.post('/pedidos/:id/eliminar', async (req, res) => {
   );
 
   res.redirect('/pedidos');
+});
+
+// ===============================================
+// RUTAS DE RESTARUANTES (SOLO ADMIN)
+// ===============================================
+app.get('/admin/restaurantes', requireAdmin, async (req, res) => {
+  const result = await pool.query(
+    `SELECT id, slug, nombre, categoria, rating, tiempo, imagen
+     FROM restaurantes
+     ORDER BY id`
+  );
+  res.render('admin_restaurantes', {
+    restaurantes: result.rows,
+    currentPage: null
+  });
+});
+
+// Crear restaurante
+app.post('/admin/restaurantes', requireAdmin, async (req, res) => {
+  const { nombre, slug, categoria, rating, tiempo, imagen } = req.body;
+
+  if (!nombre || !slug) return res.redirect('/admin/restaurantes');
+
+  await pool.query(
+    `INSERT INTO restaurantes (slug, nombre, categoria, rating, tiempo, imagen)
+     VALUES ($1,$2,$3,$4,$5,$6)`,
+    [slug.trim(), nombre.trim(), categoria || '', rating || null, tiempo || '', imagen || '']
+  );
+
+  res.redirect('/admin/restaurantes');
+});
+
+// Editar restaurante
+app.post('/admin/restaurantes/:id/editar', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { nombre, slug, categoria, rating, tiempo, imagen } = req.body;
+
+  await pool.query(
+    `UPDATE restaurantes
+     SET slug=$1, nombre=$2, categoria=$3, rating=$4, tiempo=$5, imagen=$6
+     WHERE id=$7`,
+    [slug.trim(), nombre.trim(), categoria || '', rating || null, tiempo || '', imagen || '', id]
+  );
+
+  res.redirect('/admin/restaurantes');
+});
+
+// Eliminar restaurante
+app.post('/admin/restaurantes/:id/eliminar', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  await pool.query('DELETE FROM restaurantes WHERE id = $1', [id]);
+  res.redirect('/admin/restaurantes');
 });
 
 
