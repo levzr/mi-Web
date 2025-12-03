@@ -65,16 +65,31 @@ function requireAdmin(req, res, next) {
 // ===============================================
 // Cargar datos JSON locales
 // ===============================================
-const dataPath = path.join(__dirname, "data", "restaurantes.json");
-let restaurantes = [];
+app.get("/", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT slug AS id, nombre, categoria, rating, tiempo, imagen
+       FROM restaurantes
+       ORDER BY id`
+    );
 
-try {
-  const rawData = fs.readFileSync(dataPath, "utf-8");
-  restaurantes = JSON.parse(rawData);
-  console.log("📦 Restaurantes cargados:", restaurantes.length);
-} catch (err) {
-  console.error("❌ Error cargando restaurantes.json:", err);
-}
+    res.render("home", {
+      restaurantes: result.rows,
+      currentPage: "home",
+      user: req.session.user || null
+    });
+  } catch (err) {
+    console.error("Error cargando restaurantes:", err);
+
+    // Fallback: si algo falla, usa el JSON que ya tenías
+    res.render("home", {
+      restaurantes,            // el require('./data/restaurantes.json')
+      currentPage: "home",
+      user: req.session.user || null
+    });
+  }
+});
+
 
 // ===============================================
 // 🌐 RUTAS WEB (EJS)
