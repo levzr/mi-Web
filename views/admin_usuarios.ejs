@@ -1,41 +1,52 @@
 <%- include('parcial/header') %>
 
-<section>
-  <h2 style="color:#ffffff;margin-bottom:1.2em;padding:12px;">Lista de usuarios</h2>
-  <div style="overflow-x:auto;">
-    <table class="usuarios-table" style="width:100%;border-collapse:collapse;">
-      <thead>
-        <tr>
-          <th style="padding:12px 8px;">ID</th>
-          <th style="padding:12px 8px;">Nombre</th>
-          <th style="padding:12px 8px;">Email</th>
-          <th style="padding:12px 8px;">Dirección</th>
-          <th style="padding:12px 8px;">Admin</th>
-          <th style="padding:12px 8px;">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% users.forEach(user => { %>
-          <tr>
-            <td style="text-align:center;"><%= user.id %></td>
-            <td><%= user.nombre %></td>
-            <td><%= user.email %></td>
-            <td><%= user.direccion %></td>
-            <td style="text-align:center;">
-              <span style="padding:4px 10px;border-radius:8px;color:#fff;<%= user.es_admin ? 'background:#2ecc71;' : 'background:#95a5a6;' %>">
-                <%= user.es_admin ? 'Sí' : 'No' %>
-              </span>
-            </td>
-            <td style="text-align:center;">
-              <form style="display:inline" method="POST" action="/api/usuarios/<%= user.id %>?_method=DELETE" onsubmit="return confirm('¿Eliminar este usuario?');">
-                <button type="submit" class="btn-danger" style="padding:12px 14px;border-radius:4px;border: bottom 10px;background:#e74c3c;color:#fff;font-weight:600;cursor:pointer;">Eliminar</button>
-              </form>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+<section class="admin-pedidos-container">
+  <div class="admin-pedidos-header">
+    <h1>Usuarios</h1>
   </div>
+
+  <% if (users.length === 0) { %>
+    <p>No hay usuarios registrados.</p>
+  <% } else { %>
+    <div class="admin-pedidos-table-wrapper">
+      <table class="admin-table usuarios-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Dirección</th>
+            <th>Admin</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach(user => { %>
+            <tr>
+              <td style="text-align:center;">#<%= user.id %></td>
+              <td><%= user.nombre %></td>
+              <td><%= user.email %></td>
+              <td><%= user.direccion %></td>
+              <td style="text-align:center;">
+                <span class="badge <%= user.es_admin ? 'badge-success' : 'badge-warning' %>">
+                  <%= user.es_admin ? 'Sí' : 'No' %>
+                </span>
+              </td>
+              <td style="text-align:center;">
+                <form style="display:inline"
+                      method="POST"
+                      action="/api/usuarios/<%= user.id %>?_method=DELETE"
+                      onsubmit="return confirm('¿Eliminar este usuario?');">
+                  <button type="submit" class="btn-danger btn-xs">Eliminar</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
 </section>
 
 <%- include('parcial/footer') %>
+

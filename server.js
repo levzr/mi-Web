@@ -274,6 +274,17 @@ app.put('/api/usuarios/:id/password', requireAdmin, async (req, res) => {
 });
 
 // ===============================================
+// VISTA HTML DE USUARIOS (SOLO ADMIN)
+// ===============================================
+app.get('/admin/usuarios', requireAdmin, async (req, res) => {
+  const resultado = await pool.query(
+    'SELECT id, nombre, email, direccion, es_admin FROM usuarios ORDER BY id'
+  );
+
+  res.render('admin_usuarios', { users: resultado.rows });
+});
+
+// ===============================================
 // RUTAS DE PEDIDOS ADMIN
 // ===============================================
 app.get("/admin/pedidos", requireAdmin, async (req, res) => {
