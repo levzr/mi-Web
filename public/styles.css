@@ -160,17 +160,17 @@ img{display:block;max-width:100%}
   justify-content: center;
   align-items: flex-start;
   padding: 60px 20px;
-  background-color: #0b1120;
+  background-color: #1f2937;
   min-height: 100vh;
 }
 
 .checkout-card {
-  background: #1e293b;
+  background: #1f2937;
   border-radius: 20px;
   padding: 40px;
   width: 100%;
   max-width: 550px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  box-shadow: #1f2937;
   color: #f9fafb;
 }
 
