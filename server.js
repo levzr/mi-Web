@@ -298,23 +298,21 @@ app.get("/pedidos", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const pedidosResult = await pool.query(
-  `SELECT 
-     o.id,
-     o.nombre,
-     o.direccion,
-     o.fecha,
-     o.schedule_date,
-     o.schedule_slot,
-     o.estado,
-     r.nombre AS restaurante_nombre
-   FROM ordenes o
-   LEFT JOIN restaurantes r ON o.restaurante_id = r.id
-   WHERE o.usuario_id = $1
-   ORDER BY o.fecha DESC`,
-  [req.session.user.id]
-);
-
-
+    `SELECT 
+       o.id,
+       o.nombre,
+       o.direccion,
+       o.fecha,
+       o.schedule_date,
+       o.schedule_slot,
+       o.estado,
+       r.nombre AS restaurante_nombre
+     FROM ordenes o
+     LEFT JOIN restaurantes r ON o.restaurante_id = r.id
+     WHERE o.usuario_id = $1
+     ORDER BY o.fecha DESC`,
+    [req.session.user.id]
+  );
   const pedidos = pedidosResult.rows;
 
   let detallesPorPedido = {};
@@ -328,7 +326,8 @@ app.get("/pedidos", async (req, res) => {
          d.id,
          d.orden_id,
          d.cantidad,
-         p.nombre
+         p.nombre,
+         p.precio
        FROM detalles_orden d
        JOIN platos p ON p.id = d.plato_id
        WHERE d.orden_id = ANY($1::int[])`,
@@ -341,8 +340,10 @@ app.get("/pedidos", async (req, res) => {
     for (const d of detallesResult.rows) {
       if (!detallesPorPedido[d.orden_id]) {
         detallesPorPedido[d.orden_id] = [];
+        totalesPorPedido[d.orden_id] = 0;
       }
       detallesPorPedido[d.orden_id].push(d);
+      totalesPorPedido[d.orden_id] += Number(d.precio) * Number(d.cantidad);
     }
   }
 
@@ -357,6 +358,7 @@ app.get("/pedidos", async (req, res) => {
     totalesPorPedido
   });
 });
+
 
 // añadir plato
 app.post('/pedidos/:id/agregar', async (req, res) => {
