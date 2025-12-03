@@ -289,7 +289,6 @@ app.post("/admin/pedidos/:id/delete", requireAdmin, async (req, res) => {
 app.get("/pedidos", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
-  // Pedidos del usuario
   const pedidosResult = await pool.query(
     `SELECT id, nombre, direccion, fecha, schedule_date, schedule_slot, estado
      FROM ordenes
@@ -300,7 +299,6 @@ app.get("/pedidos", async (req, res) => {
 
   const pedidos = pedidosResult.rows;
 
-  // Si no hay pedidos, no hace falta consultar detalles
   let detallesPorPedido = {};
   if (pedidos.length > 0) {
     const ids = pedidos.map(p => p.id);
@@ -336,8 +334,8 @@ app.get("/pedidos", async (req, res) => {
     detallesPorPedido
   });
 });
-//agregar 
 
+// añadir plato
 app.post('/pedidos/:id/agregar', async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
@@ -361,24 +359,13 @@ app.post('/pedidos/:id/agregar', async (req, res) => {
 
   res.redirect("/pedidos");
 });
+
+// eliminar plato
 app.post('/pedidos/:pedidoId/detalles/:detalleId/eliminar', async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
   const { pedidoId, detalleId } = req.params;
 
-  //confirmar pedido
-  app.post('/pedidos/:id/confirmar', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
-  await pool.query(
-    `UPDATE ordenes
-     SET estado = 'confirmado'
-     WHERE id = $1 AND usuario_id = $2`,
-    [req.params.id, req.session.user.id]
-  );
-  res.redirect('/pedidos');
-});
-
-  //validar pedido del usuario
   await pool.query(
     `DELETE FROM detalles_orden
      WHERE id = $1
@@ -388,6 +375,21 @@ app.post('/pedidos/:pedidoId/detalles/:detalleId/eliminar', async (req, res) => 
 
   res.redirect("/pedidos");
 });
+
+// confirmar pedido
+app.post('/pedidos/:id/confirmar', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+
+  await pool.query(
+    `UPDATE ordenes
+     SET estado = 'confirmado'
+     WHERE id = $1 AND usuario_id = $2`,
+    [req.params.id, req.session.user.id]
+  );
+
+  res.redirect('/pedidos');
+});
+
 
 // ===============================================
 // API DE RESTAURANTES Y ÓRDENES
