@@ -80,24 +80,15 @@ app.get("/", async (req, res) => {
     });
   } catch (err) {
     console.error("Error cargando restaurantes:", err);
-
-    // Fallback: si algo falla, usa el JSON que ya tenías
-    res.render("home", {
-      restaurantes,            // el require('./data/restaurantes.json')
-      currentPage: "home",
-      user: req.session.user || null
-    });
+    res.status(500).render("error", { mensaje: "Error cargando restaurantes" });
   }
 });
+
 
 
 // ===============================================
 // 🌐 RUTAS WEB (EJS)
 // ===============================================
-app.get("/", (req, res) => {
-  res.render("home", { restaurantes, currentPage: "home" });
-});
-
 app.get("/login", (req, res) => {
   if (req.session.user) {
     return res.redirect("/");
@@ -719,7 +710,14 @@ app.post("/admin/platos/:platoId/eliminar", requireAdmin, async (req, res) => {
 // ===============================================
 // API DE RESTAURANTES Y ÓRDENES
 // ===============================================
-app.get("/api/restaurantes", (req, res) => res.json(restaurantes));
+app.get("/api/restaurantes", async (req, res) => {
+  const result = await pool.query(
+    `SELECT slug AS id, nombre, categoria, rating, tiempo, imagen
+     FROM restaurantes
+     ORDER BY id`
+  );
+  res.json(result.rows);
+});
 
 app.post("/api/ordenes", async (req, res) => {
   try {
