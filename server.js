@@ -190,7 +190,16 @@ app.post("/checkout", async (req, res) => {
         error: "La fecha debe ser entre hoy y los próximos 7 días"
       });
     }
+    const isToday = selected.getTime() === today.getTime();
 
+    if (scheduleSlot === 'Inmediato' && !isToday) {
+      return res.status(400).render("checkout", {
+        restaurante: restauranteId,
+        plato: pedido,
+        precio: precio || "0",
+        error: "La opción Inmediato solo está disponible para hoy. Para mañana elige una franja horaria."
+      }); 
+    }
     // 3. Determinar usuario_id
     let usuarioId = null;
     if (req.session.user) {
@@ -225,8 +234,8 @@ app.post("/checkout", async (req, res) => {
     }
 
     // 5. Normalizar valores de programación
-    const finalScheduleDate = scheduleDate;            // yyyy-mm-dd
-    const finalScheduleSlot = scheduleSlot;            // texto del select
+    const finalScheduleDate = scheduleDate;          
+    const finalScheduleSlot = scheduleSlot;            
 
     // 6. Insertar la orden (estado borrador)
     const orderInsert = await pool.query(
@@ -505,16 +514,7 @@ app.get("/pedidos", async (req, res) => {
   });
 });
 
-const isToday = selected.getTime() === today.getTime();
 
-if (scheduleSlot === 'Inmediato' && !isToday) {
-  return res.status(400).render('checkout', {
-    restaurante: restauranteId,
-    plato: pedido,
-    precio: precio || "0",
-    error: "La opción Inmediato solo está disponible para hoy. Para mañana elige una franja horaria."
-  });
-}
 
 
 
