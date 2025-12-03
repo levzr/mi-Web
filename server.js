@@ -336,6 +336,31 @@ app.get("/pedidos", async (req, res) => {
     detallesPorPedido
   });
 });
+//agregar 
+
+app.post('/pedidos/:id/agregar', async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  const { platoId, cantidad } = req.body;
+  const pedidoId = req.params.id;
+
+  const pedido = await pool.query(
+    "SELECT * FROM ordenes WHERE id = $1 AND usuario_id = $2 AND estado = 'borrador'",
+    [pedidoId, req.session.user.id]
+  );
+
+  if (pedido.rows.length === 0) {
+    return res.status(403).send("No puedes editar este pedido");
+  }
+
+  await pool.query(
+    `INSERT INTO detalles_orden (orden_id, plato_id, cantidad)
+     VALUES ($1, $2, $3)`,
+    [pedidoId, platoId, cantidad]
+  );
+
+  res.redirect("/pedidos");
+});
 app.post('/pedidos/:pedidoId/detalles/:detalleId/eliminar', async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
@@ -351,7 +376,6 @@ app.post('/pedidos/:pedidoId/detalles/:detalleId/eliminar', async (req, res) => 
 
   res.redirect("/pedidos");
 });
-
 
 // ===============================================
 // API DE RESTAURANTES Y ÓRDENES
