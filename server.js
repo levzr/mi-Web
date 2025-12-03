@@ -197,7 +197,8 @@ app.post("/checkout", async (req, res) => {
         restaurante: restauranteId,
         plato: pedido,
         precio: precio || "0",
-        error: "La opción Inmediato solo está disponible para hoy. Para mañana elige una franja horaria."
+        error: "La opción Inmediato solo está disponible para hoy.",
+        "Para mañana elige una franja horaria."
       }); 
     }
     // 3. Determinar usuario_id
