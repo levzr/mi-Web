@@ -76,10 +76,23 @@ try {
 // ===============================================
 // 🌐 RUTAS WEB (EJS)
 // ===============================================
-app.get("/", (req, res) => res.render("home", { restaurantes }));
+app.get("/", (req, res) => {
+  res.render("home", { restaurantes, currentPage: "home" });
+});
 
-app.get("/login", (req, res) => res.render("login"));
-app.get("/register", (req, res) => res.render("register"));
+app.get("/login", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/");
+  }
+  res.render("login", { currentPage: "login" });
+});
+
+app.get("/register", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/");
+  }
+  res.render("register", { currentPage: "register" });
+});
 
 app.get("/restaurantes/:slug", (req, res) => {
   const restaurante = restaurantes.find((r) => r.id === req.params.slug);
