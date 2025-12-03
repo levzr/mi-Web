@@ -115,15 +115,8 @@ app.get("/checkout", (req, res) => {
 app.post("/checkout", async (req, res) => {
   try {
     const {
-      nombre,
-      direccion,
-      telefono,
-      restauranteId,
-      pedido,
-      scheduleDate,
-      scheduleSlot,
-      precio
-    } = req.body;
+      nombre, direccion, telefono, restauranteId, pedido, scheduleDate,
+      scheduleSlot, precio} = req.body;
 
     // 1. Validaciones básicas de formulario
     const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,60}$/;
@@ -246,18 +239,10 @@ app.post("/checkout", async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'borrador')
        RETURNING id`,
       [
-        usuarioId,
-        nombre.trim(),
-        direccion.trim(),
-        telefono,
-        restaurante_id,
-        restauranteId,
-        pedido,
-        new Date(),
-        finalScheduleDate,
-        finalScheduleSlot
-      ]
-    );
+        usuarioId, nombre.trim(), direccion.trim(), telefono,
+        restaurante_id, restauranteId, pedido,
+        new Date(), finalScheduleDate, finalScheduleSlot
+      ]);
 
     const ordenId = orderInsert.rows[0].id;
 

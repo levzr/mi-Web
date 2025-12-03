@@ -39,7 +39,7 @@
           <p><strong>Precio:</strong> L <%= precio || "0" %></p>
         </div>
 
-        <!-- Campos ocultos para enviar datos -->
+        <!-- Campos ocultos -->
         <input type="hidden" name="restauranteId" value="<%= restaurante || '' %>">
         <input type="hidden" name="pedido" value="<%= plato || '' %>">
         <input type="hidden" name="precio" value="<%= precio || '0' %>">
@@ -60,36 +60,37 @@
         <label for="scheduleSlot">Hora:</label>
         <select id="scheduleSlot" name="scheduleSlot" required>
           <option value="">Selecciona una franja</option>
-          <option value="Inmediato">Inmediato (40–60 min)</option>
-          <option value="10:00-11:00">10:00 – 11:00</option>
-          <option value="11:00-12:00">11:00 – 12:00</option>
-          <option value="12:00-13:00">12:00 – 13:00</option>
-          <option value="13:00-14:00">13:00 – 14:00</option>
-          <option value="14:00-15:00">14:00 – 15:00</option>
-          <option value="15:00-16:00">15:00 – 16:00</option>
-          <option value="16:00-17:00">16:00 – 17:00</option>
-          <option value="17:00-18:00">17:00 – 18:00</option>
-          <option value="18:00-19:00">18:00 – 19:00</option>
-          <option value="19:00-20:00">19:00 – 20:00</option>
-          <option value="20:00-21:00">20:00 – 21:00</option>
-          <option value="21:00-22:00">21:00 – 22:00</option>
-          <option value="22:00-23:00">22:00 – 23:00</option>
+          <option value="Inmediato" data-start="now">Inmediato (40–60 min)</option>
+          <option value="10:00-11:00" data-start="10:00">10:00 – 11:00</option>
+          <option value="11:00-12:00" data-start="11:00">11:00 – 12:00</option>
+          <option value="12:00-13:00" data-start="12:00">12:00 – 13:00</option>
+          <option value="13:00-14:00" data-start="13:00">13:00 – 14:00</option>
+          <option value="14:00-15:00" data-start="14:00">14:00 – 15:00</option>
+          <option value="15:00-16:00" data-start="15:00">15:00 – 16:00</option>
+          <option value="16:00-17:00" data-start="16:00">16:00 – 17:00</option>
+          <option value="17:00-18:00" data-start="17:00">17:00 – 18:00</option>
+          <option value="18:00-19:00" data-start="18:00">18:00 – 19:00</option>
+          <option value="19:00-20:00" data-start="19:00">19:00 – 20:00</option>
+          <option value="20:00-21:00" data-start="20:00">20:00 – 21:00</option>
+          <option value="21:00-22:00" data-start="21:00">21:00 – 22:00</option>
+          <option value="22:00-23:00" data-start="22:00">22:00 – 23:00</option>
         </select>
       </div>
 
-      <!-- Botón de confirmación -->
       <button type="submit" class="btn-confirmar">Confirmar Pedido</button>
     </form>
   </div>
 </section>
 
 <script>
-  // Limitar fecha: hoy hasta 7 días adelante
   (function () {
     const dateInput = document.getElementById('scheduleDate');
-    if (!dateInput) return;
+    const slotSelect = document.getElementById('scheduleSlot');
+    if (!dateInput || !slotSelect) return;
 
+    // === Rango de fechas: hoy a +7 días ===
     const today = new Date();
+    today.setHours(0,0,0,0);
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
@@ -105,7 +106,56 @@
     dateInput.min = minDate;
     dateInput.max = maxDate;
     dateInput.value = minDate;
+
+    function resetSlots() {
+      Array.from(slotSelect.options).forEach(opt => {
+        opt.disabled = false;
+        opt.hidden = false;
+      });
+      slotSelect.value = "";
+    }
+
+    function updateSlots() {
+      resetSlots();
+
+      const selectedDate = new Date(dateInput.value);
+      selectedDate.setHours(0,0,0,0);
+      if (isNaN(selectedDate.getTime())) return;
+
+      const isToday = selectedDate.getTime() === today.getTime();
+      if (!isToday) return; // día futuro: todas las franjas disponibles
+
+      const now = new Date();
+      const limit = new Date(now.getTime() + 40 * 60000); // ahora + 40 min
+
+      Array.from(slotSelect.options).forEach(opt => {
+        const start = opt.getAttribute('data-start');
+        if (!start || opt.value === "") return;
+
+        if (start === 'now') {
+          // "Inmediato": siempre disponible hoy, lo valida el backend
+          return;
+        }
+
+        const [h, m] = start.split(':').map(Number);
+        const slotTime = new Date();
+        slotTime.setHours(h, m, 0, 0);
+
+        if (limit >= slotTime) {
+          opt.disabled = true;
+          opt.hidden = true;
+        }
+      });
+
+      if (slotSelect.selectedOptions[0] && slotSelect.selectedOptions[0].disabled) {
+        slotSelect.value = "";
+      }
+    }
+
+    dateInput.addEventListener('change', updateSlots);
+    updateSlots(); // inicial (hoy)
   })();
 </script>
 
 <%- include('parcial/footer') %>
+
