@@ -114,7 +114,6 @@
       });
       slotSelect.value = "";
     }
-
     function updateSlots() {
       resetSlots();
 
@@ -123,23 +122,21 @@
       if (isNaN(selectedDate.getTime())) return;
 
       const isToday = selectedDate.getTime() === today.getTime();
-      if (!isToday) return; // día futuro: todas las franjas disponibles
+      if (!isToday) return; 
 
       const now = new Date();
-      const limit = new Date(now.getTime() + 40 * 60000); // ahora + 40 min
+      const limit = new Date(now.getTime() + 40 * 60000); 
 
       Array.from(slotSelect.options).forEach(opt => {
         const start = opt.getAttribute('data-start');
         if (!start || opt.value === "") return;
 
         if (start === 'now') {
-          // "Inmediato": siempre disponible hoy, lo valida el backend
           return;
         }
-
         const [h, m] = start.split(':').map(Number);
         const slotTime = new Date();
-        slotTime.setHours(h, m, 0, 0);
+        slotTime.setHours(h, m || 0, 0, 0);
 
         if (limit >= slotTime) {
           opt.disabled = true;
@@ -149,13 +146,12 @@
 
       if (slotSelect.selectedOptions[0] && slotSelect.selectedOptions[0].disabled) {
         slotSelect.value = "";
-      }
-    }
-
+      } }
     dateInput.addEventListener('change', updateSlots);
-    updateSlots(); // inicial (hoy)
+    updateSlots();
   })();
 </script>
+
 
 <%- include('parcial/footer') %>
 
