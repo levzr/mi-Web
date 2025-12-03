@@ -1,42 +1,51 @@
 <%- include('parcial/header') %>
 
-<section class="admin-container"> <h1>Pedidos (Admin)</h1>
-<pre><%= JSON.stringify(pedidos, null, 2) %></pre>
-    <% if (pedidos.length === 0) { %>
-<p>No hay pedidos registrados.</p>
-<% } else { %>
-<table class="admin-table">
-<thead>
-<tr>
-<th>ID</th>
-<th>Cliente</th>
-<th>Restaurante</th>
-<th>Pedido</th>
-<th>Fecha</th>
-<th>Entrega</th>
-<th>Acciones</th>
-</tr>
-</thead>
-<tbody>
-<% pedidos.forEach(p => { %>
-<tr>
-<td><%= p.id %></td>
-<td><%= p.nombre %></td>
-<td><%= p.restaurante || '-' %></td>
-<td><%= p.pedido %></td>
-<td><%= p.fecha.toLocaleString() %></td>
-<td><%= (p.schedule_date || '') + ' ' + (p.schedule_slot || '') %></td>
-<td><%= p.estado %></td>
-<td>
-<form action="/admin/pedidos/<%= p.id %>/delete" method="POST" onsubmit="return confirm('¿Eliminar pedido?');">
-<button type="submit" class="btn-danger">Eliminar</button>
-</form>
-</td>
-</tr>
-<% }) %>
-</tbody>
-</table>
-<% } %>
+<section class="checkout-container">
+  <div class="checkout-card">
+    <h1>Pedidos (Admin)</h1>
 
+    <% if (pedidos.length === 0) { %>
+      <p>No hay pedidos registrados.</p>
+    <% } else { %>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Restaurante</th>
+            <th>Pedido</th>
+            <th>Fecha</th>
+            <th>Entrega</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% pedidos.forEach(p => { %>
+            <tr>
+              <td>#<%= p.id %></td>
+              <td><%= p.nombre %></td>
+              <td><%= p.restaurante || '-' %></td>
+              <td><%= p.pedido %></td>
+              <td><%= p.fecha.toLocaleString() %></td>
+              <td><%= (p.schedule_date || '') + ' ' + (p.schedule_slot || '') %></td>
+              <td>
+                <span class="badge <%= p.estado === 'confirmado' ? 'badge-success' : 'badge-warning' %>">
+                  <%= p.estado %>
+                </span>
+              </td>
+              <td>
+                <form action="/admin/pedidos/<%= p.id %>/delete" method="POST"
+                      onsubmit="return confirm('¿Eliminar este pedido?');">
+                  <button type="submit" class="btn-danger btn-xs">Eliminar</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
 </section>
+
 <%- include('parcial/footer') %>
