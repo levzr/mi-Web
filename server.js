@@ -318,6 +318,8 @@ app.get("/pedidos", async (req, res) => {
   const pedidos = pedidosResult.rows;
 
   let detallesPorPedido = {};
+  let totalesPorPedido = {};
+
   if (pedidos.length > 0) {
     const ids = pedidos.map(p => p.id);
 
@@ -334,6 +336,8 @@ app.get("/pedidos", async (req, res) => {
     );
 
     detallesPorPedido = {};
+    totalesPorPedido = {};
+
     for (const d of detallesResult.rows) {
       if (!detallesPorPedido[d.orden_id]) {
         detallesPorPedido[d.orden_id] = [];
@@ -349,7 +353,8 @@ app.get("/pedidos", async (req, res) => {
   res.render("pedidos", {
     pedidos,
     platos: platosResult.rows,
-    detallesPorPedido
+    detallesPorPedido,
+    totalesPorPedido
   });
 });
 
@@ -397,16 +402,66 @@ app.post('/pedidos/:pedidoId/detalles/:detalleId/eliminar', async (req, res) => 
 // confirmar pedido
 app.post('/pedidos/:id/confirmar', async (req, res) => {
   if (!req.session.user) return res.redirect('/login');
+  const { id } = req.params;
 
   await pool.query(
     `UPDATE ordenes
      SET estado = 'confirmado'
      WHERE id = $1 AND usuario_id = $2`,
-    [req.params.id, req.session.user.id]
+    [id, req.session.user.id]
   );
+
+  // 2. Obtener datos del pedido
+  const pedidoResult = await pool.query(
+    `SELECT 
+       o.id,
+       o.nombre,
+       o.direccion,
+       o.fecha,
+       o.schedule_date,
+       o.schedule_slot,
+       r.nombre AS restaurante_nombre
+     FROM ordenes o
+     LEFT JOIN restaurantes r ON o.restaurante_id = r.id
+     WHERE o.id = $1 AND o.usuario_id = $2`,
+    [id, req.session.user.id]
+  );
+  const pedido = pedidoResult.rows[0];
+
+  // 3. Obtener platos + precios
+  const detallesResult = await pool.query(
+    `SELECT d.cantidad, p.nombre, p.precio
+     FROM detalles_orden d
+     JOIN platos p ON p.id = d.plato_id
+     WHERE d.orden_id = $1`,
+    [id]
+  );
+  const detalles = detallesResult.rows;
+
+  // 4. Calcular total
+  let total = 0;
+  detalles.forEach(d => {
+    total += Number(d.precio) * Number(d.cantidad);
+  });
+
+  // 5. Guardar resumen en la sesión
+  req.session.lastOrder = {
+    id: pedido.id,
+    cliente: pedido.nombre,
+    restaurante: pedido.restaurante_nombre,
+    fecha: pedido.fecha,
+    entrega: `${pedido.schedule_date || ''} ${pedido.schedule_slot || ''}`,
+    total,
+    detalles: detalles.map(d => ({
+      nombre: d.nombre,
+      cantidad: d.cantidad,
+      precio: d.precio
+    }))
+  };
 
   res.redirect('/');
 });
+
 
 
 // ===============================================

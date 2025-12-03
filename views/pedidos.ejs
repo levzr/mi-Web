@@ -28,21 +28,27 @@
               </form>
             <% } %>
 
+            <p><strong>Cliente:</strong> <%= p.nombre %></p>
+            <p><strong>Restaurante:</strong> <%= p.restaurante_nombre || '-' %></p>
+
             <p><strong>Platos del pedido:</strong></p>
             <ul>
               <% (detallesPorPedido[p.id] || []).forEach(d => { %>
                 <li>
-                  <%= d.nombre %> x <%= d.cantidad %>
-
+                  <%= d.nombre %> x <%= d.cantidad %> — L <%= (d.precio * d.cantidad).toFixed(2) %>
                   <% if (p.estado === 'borrador') { %>
                     <form action="/pedidos/<%= p.id %>/detalles/<%= d.id %>/eliminar" method="POST" style="display:inline;">
                       <button type="submit">Quitar</button>
                     </form>
-                 <% } %>
-               </li>
+                  <% } %>
+                </li>
               <% }) %>
             </ul>
 
+            <p style="margin-top:6px;">
+              <strong>Total del pedido:</strong>
+              L <%= (totalesPorPedido[p.id] || 0).toFixed(2) %>
+            </p>
 
             <p><strong>Fecha:</strong> <%= p.fecha.toLocaleString() %></p>
             <p><strong>Entrega:</strong> <%= (p.schedule_date || '') + ' ' + (p.schedule_slot || '') %></p>
@@ -54,6 +60,7 @@
 </section>
 
 <%- include('parcial/footer') %>
+
 
 
 
