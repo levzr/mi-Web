@@ -190,15 +190,36 @@ app.post("/checkout", async (req, res) => {
 app.post("/api/register", async (req, res) => {
   try {
     const { nombre, email, password, direccion } = req.body;
-    if (!nombre || !email || !password)
+
+    // Validaciones básicas
+    const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,50}$/;
+
+    if (!nombre || !email || !password) {
       return res.status(400).render("register", { error: "Faltan campos obligatorios" });
+    }
+
+    if (!nombreRegex.test(nombre)) {
+      return res.status(400).render("register", { error: "El nombre solo puede tener letras y espacios (mínimo 3 caracteres)" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).render("register", { error: "La contraseña debe tener al menos 6 caracteres" });
+    }
+
+    // Email simple check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).render("register", { error: "Ingresa un correo electrónico válido" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
     await pool.query(
       `INSERT INTO usuarios (nombre, email, password, direccion, es_admin)
        VALUES ($1, $2, $3, $4, FALSE)
        ON CONFLICT (email) DO NOTHING`,
-      [nombre, email, hashedPassword, direccion || ""]
+      [nombre.trim(), email.toLowerCase(), hashedPassword, direccion || ""]
     );
+
     res.redirect("/login");
   } catch (err) {
     console.error("⚠️ Error en /api/register:", err);
@@ -210,26 +231,40 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const result = await pool.query("SELECT * FROM usuarios WHERE email = $1", [email]);
+
+    if (!email || !password) {
+      return res.status(400).render("login", { error: "Ingresa tu correo y contraseña" });
+    }
+
+    const result = await pool.query(
+      "SELECT * FROM usuarios WHERE email = $1",
+      [email.toLowerCase()]
+    );
     const user = result.rows[0];
-    if (!user)
+
+    if (!user) {
       return res.status(401).render("login", { error: "Usuario no encontrado" });
+    }
+
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword)
+    if (!validPassword) {
       return res.status(401).render("login", { error: "Contraseña incorrecta" });
+    }
+
     req.session.user = {
       id: user.id,
       nombre: user.nombre,
       email: user.email,
-      es_admin: user.es_admin === true || user.es_admin === 't' 
+      es_admin: user.es_admin === true || user.es_admin === "t",
     };
-    console.log('Usuario en sesión:', req.session.user);
+
     res.redirect("/");
   } catch (err) {
     console.error("🔥 Error en /api/login:", err);
     res.status(500).render("login", { error: "Error iniciando sesión" });
   }
 });
+
 
 // Logout GET y POST
 app.get("/api/logout", (req, res) => {
