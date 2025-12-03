@@ -82,5 +82,34 @@
         "imagen": "/imgs/risotto-mariscos.jpg"
       }
     ]
+  },
+
+  {
+    "id": "megadelicias",
+    "nombre": "Megadelicias",
+    "categoria": "Familiar / Gourmet",
+    "rating": 4.5,
+    "tiempo": "30-45 min",
+    "imagen": "/imgs/megadelicias.jpg",
+    "platos": [
+      {
+        "nombre": "Chiken Fingers",
+        "descripcion": "Dedos de pollo con papas a la francesa",
+        "precio": 180,
+        "imagen": "/imgs/chikenfingers.jpg"
+      },
+      {
+        "nombre": "Fetuchini",
+        "descripcion": "Pasta fetuchini con camarones",
+        "precio": 299,
+        "imagen": "/imgs/fetuchini.jpg"
+      },
+      {
+        "nombre": "Hamburguesa",
+        "descripcion": "Hamburguesa con papas a la francesa",
+        "precio": 180,
+        "imagen": "/imgs/hamb.jpg"
+      }
+    ]
   }
 ]
