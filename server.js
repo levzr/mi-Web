@@ -317,19 +317,21 @@ app.post('/pedidos/:id/agregar', async (req, res) => {
     "SELECT * FROM ordenes WHERE id = $1 AND usuario_id = $2 AND estado = 'borrador'",
     [pedidoId, req.session.user.id]
   );
+  console.log('pedido rows:', pedido.rows);
 
   if (pedido.rows.length === 0) {
+    console.log('No puedes editar este pedido');
     return res.status(403).send("No puedes editar este pedido");
   }
-
   await pool.query(
     `INSERT INTO detalles_orden (orden_id, plato_id, cantidad, subtotal)
      VALUES ($1, $2, $3, $4)`,
     [pedidoId, platoId, cantidad, 0]
   );
-
+  console.log('Plato añadido OK');
   res.redirect("/pedidos");
 });
+
 app.post('/pedidos/:id/confirmar', async (req, res) => {
   if (!req.session.user) return res.redirect('/login');
   await pool.query(
