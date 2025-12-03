@@ -289,60 +289,68 @@ app.post("/admin/pedidos/:id/delete", requireAdmin, async (req, res) => {
 app.get("/pedidos", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
+  // Pedidos del usuario
   const pedidosResult = await pool.query(
-    `SELECT id, nombre, direccion, pedido, fecha, schedule_date, schedule_slot, estado
+    `SELECT id, nombre, direccion, fecha, schedule_date, schedule_slot, estado
      FROM ordenes
      WHERE usuario_id = $1
      ORDER BY fecha DESC`,
     [req.session.user.id]
   );
 
+  const pedidos = pedidosResult.rows;
+
+  // Si no hay pedidos, no hace falta consultar detalles
+  let detallesPorPedido = {};
+  if (pedidos.length > 0) {
+    const ids = pedidos.map(p => p.id);
+
+    const detallesResult = await pool.query(
+      `SELECT 
+         d.id,
+         d.orden_id,
+         d.cantidad,
+         p.nombre
+       FROM detalles_orden d
+       JOIN platos p ON p.id = d.plato_id
+       WHERE d.orden_id = ANY($1::int[])`,
+      [ids]
+    );
+
+    detallesPorPedido = {};
+    for (const d of detallesResult.rows) {
+      if (!detallesPorPedido[d.orden_id]) {
+        detallesPorPedido[d.orden_id] = [];
+      }
+      detallesPorPedido[d.orden_id].push(d);
+    }
+  }
+
   const platosResult = await pool.query(
     `SELECT id, nombre FROM platos ORDER BY nombre`
   );
 
   res.render("pedidos", {
-    pedidos: pedidosResult.rows,
+    pedidos,
     platos: platosResult.rows,
+    detallesPorPedido
   });
 });
-
-app.post('/pedidos/:id/agregar', async (req, res) => {
+app.post('/pedidos/:pedidoId/detalles/:detalleId/eliminar', async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
 
-  const { platoId, cantidad } = req.body;
-  const pedidoId = req.params.id;
+  const { pedidoId, detalleId } = req.params;
 
-  const pedido = await pool.query(
-    "SELECT * FROM ordenes WHERE id = $1 AND usuario_id = $2 AND estado = 'borrador'",
-    [pedidoId, req.session.user.id]
-  );
-  console.log('pedido rows:', pedido.rows);
-
-  if (pedido.rows.length === 0) {
-    console.log('No puedes editar este pedido');
-    return res.status(403).send("No puedes editar este pedido");
-  }
+  // Opcional: validar que la orden es del usuario
   await pool.query(
-    `INSERT INTO detalles_orden (orden_id, plato_id, cantidad, subtotal)
-     VALUES ($1, $2, $3, $4)`,
-    [pedidoId, platoId, cantidad, 0]
+    `DELETE FROM detalles_orden
+     WHERE id = $1
+       AND orden_id = $2`,
+    [detalleId, pedidoId]
   );
-  console.log('Plato añadido OK');
+
   res.redirect("/pedidos");
 });
-
-app.post('/pedidos/:id/confirmar', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
-  await pool.query(
-    `UPDATE ordenes
-     SET estado = 'confirmado'
-     WHERE id = $1 AND usuario_id = $2`,
-    [req.params.id, req.session.user.id]
-  );
-  res.redirect('/pedidos');
-});
-
 
 
 // ===============================================

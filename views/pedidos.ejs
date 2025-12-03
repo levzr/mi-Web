@@ -26,7 +26,14 @@
                 <button type="submit">Confirmar este pedido</button>
               </form>
             <% } %>
-
+            <% (detallesPorPedido[p.id] || []).forEach(d => { %>
+    <li>
+      <%= d.nombre %> x <%= d.cantidad %>
+      <form action="/pedidos/<%= p.id %>/detalles/<%= d.id %>/eliminar" method="POST" style="display:inline;">
+        <button type="submit">Quitar</button>
+      </form>
+    </li>
+  <% }) %>
             <p><strong>Pedido:</strong> <%= p.pedido %></p>
             <p><strong>Fecha:</strong> <%= p.fecha.toLocaleString() %></p>
             <p><strong>Entrega:</strong> <%= (p.schedule_date || '') + ' ' + (p.schedule_slot || '') %></p>
