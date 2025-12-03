@@ -456,14 +456,8 @@ app.get("/pedidos", async (req, res) => {
 
   const pedidosResult = await pool.query(
     `SELECT 
-       o.id,
-       o.nombre,
-       o.direccion,
-       o.fecha,
-       o.schedule_date,
-       o.schedule_slot,
-       o.estado,
-       r.nombre AS restaurante_nombre
+       o.id, o.nombre, o.direccion, o.fecha, o.schedule_date, o.schedule_slot,
+       o.estado, r.nombre AS restaurante_nombre
      FROM ordenes o
      LEFT JOIN restaurantes r ON o.restaurante_id = r.id
      WHERE o.usuario_id = $1
@@ -479,12 +473,7 @@ app.get("/pedidos", async (req, res) => {
     const ids = pedidos.map(p => p.id);
 
     const detallesResult = await pool.query(
-      `SELECT 
-         d.id,
-         d.orden_id,
-         d.cantidad,
-         p.nombre,
-         p.precio
+      `SELECT d.id, d.orden_id, d.cantidad, p.nombre, p.precio
        FROM detalles_orden d
        JOIN platos p ON p.id = d.plato_id
        WHERE d.orden_id = ANY($1::int[])`,
@@ -515,6 +504,18 @@ app.get("/pedidos", async (req, res) => {
     totalesPorPedido
   });
 });
+
+const isToday = selected.getTime() === today.getTime();
+
+if (scheduleSlot === 'Inmediato' && !isToday) {
+  return res.status(400).render('checkout', {
+    restaurante: restauranteId,
+    plato: pedido,
+    precio: precio || "0",
+    error: "La opción Inmediato solo está disponible para hoy. Para mañana elige una franja horaria."
+  });
+}
+
 
 
 // añadir plato
