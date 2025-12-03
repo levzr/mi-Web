@@ -55,16 +55,25 @@
 <!-- Login, register, logout -->
 
   <div class="nav-actions">
-    <% if (user) { %>
-      <span>👋 Hola, <%= user.nombre %></span>
-      <form action="/api/logout" method="POST" style="display:inline;">
-        <button type="submit" class="btn-ghost" style="border-radius: 6; "> Cerrar sesión</button>
-      </form>
-    <% } else { %>
-      <a href="/login" class="btn-ghost">Iniciar sesión</a>
-      <a href="/register" class="btn-primary" style="border-radius: 6;">Registrarse</a>
-    <% } %>
-  </div>
+  <% if (user) { %>
+    <span>👋 Hola, <%= user.nombre %></span>
+    <form action="/api/logout" method="POST" style="display:inline;">
+      <button type="submit" class="btn-ghost" style="border-radius:6px;">Cerrar sesión</button>
+    </form>
+  <% } else { %>
+    <a href="/login"
+       class="<%= currentPage === 'login' ? 'btn-primary' : 'btn-ghost' %>"
+       style="border-radius:6px;">
+      Iniciar sesión
+    </a>
+    <a href="/register"
+       class="<%= currentPage === 'register' ? 'btn-primary' : 'btn-ghost' %>"
+       style="border-radius:6px;">
+      Registrarse
+    </a>
+  <% } %>
+</div>
+
 
 
 </nav>
