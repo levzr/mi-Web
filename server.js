@@ -147,32 +147,24 @@ app.post("/api/register", async (req, res) => {
   try {
     const { nombre, email, password, direccion } = req.body;
 
-    // Validaciones básicas
-    const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,50}$/;
+    // ... tus validaciones actuales ...
 
-    if (!nombre || !email || !password) {
-      return res.status(400).render("register", { error: "Faltan campos obligatorios" });
-    }
-
-    if (!nombreRegex.test(nombre)) {
-      return res.status(400).render("register", { error: "El nombre solo puede tener letras y espacios (mínimo 3 caracteres)" });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).render("register", { error: "La contraseña debe tener al menos 6 caracteres" });
-    }
-
-    // Email simple check
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).render("register", { error: "Ingresa un correo electrónico válido" });
+    // ¿Ya existe ese correo?
+    const existe = await pool.query(
+      "SELECT 1 FROM usuarios WHERE email = $1 LIMIT 1",
+      [email.toLowerCase()]
+    );
+    if (existe.rows.length > 0) {
+      return res
+        .status(400)
+        .render("register", { error: "Ya existe una cuenta con ese correo." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await pool.query(
       `INSERT INTO usuarios (nombre, email, password, direccion, es_admin)
-       VALUES ($1, $2, $3, $4, FALSE)
-       ON CONFLICT (email) DO NOTHING`,
+       VALUES ($1, $2, $3, $4, FALSE)`,
       [nombre.trim(), email.toLowerCase(), hashedPassword, direccion || ""]
     );
 
