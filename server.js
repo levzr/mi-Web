@@ -105,9 +105,7 @@ app.get("/register", (req, res) => {
 // ===============================================
 // 🌐 RUTAS WEB (EJS)
 // ===============================================
-// ===============================================
-// 🌐 RUTAS WEB (EJS)
-// ===============================================
+
 app.get("/restaurantes/:slug", async (req, res) => {
   const { slug } = req.params;
 
@@ -150,6 +148,10 @@ app.get("/checkout", (req, res) => {
   });
 });
 
+app.post("/checkout", async (req, res) => {
+});
+
+
 
 
 
@@ -163,9 +165,6 @@ app.post("/api/register", async (req, res) => {
   try {
     const { nombre, email, password, direccion } = req.body;
 
-    // ... tus validaciones actuales ...
-
-    // ¿Ya existe ese correo?
     const existe = await pool.query(
       "SELECT 1 FROM usuarios WHERE email = $1 LIMIT 1",
       [email.toLowerCase()]
@@ -289,15 +288,8 @@ app.get('/admin/usuarios', requireAdmin, async (req, res) => {
 app.get("/admin/pedidos", requireAdmin, async (req, res) => {
   const result = await pool.query(`
     SELECT 
-      o.id,
-      o.nombre,
-      o.direccion,
-      o.pedido,
-      o.fecha,
-      o.schedule_date,
-      o.schedule_slot,
-      o.estado,
-      r.nombre AS restaurante
+      o.id, o.nombre, o.direccion, o.pedido, o.fecha,  o.schedule_date, o.schedule_slot,
+      o.estado, r.nombre AS restaurante
     FROM ordenes o
     LEFT JOIN restaurantes r ON o.restaurante_id = r.id
     ORDER BY o.fecha DESC
