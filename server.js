@@ -149,6 +149,21 @@ app.get("/checkout", (req, res) => {
 });
 
 app.post("/checkout", async (req, res) => {
+  console.log("1) Validaciones OK");
+// después de validaciones
+
+console.log("2) Usuario listo, id =", usuarioId);
+// después de crear/actualizar usuario
+
+console.log("3) Restaurante id =", restaurante_id);
+// después de buscar restaurante
+
+console.log("4) Orden insertada, id =", ordenId);
+// justo tras insertar en ordenes
+
+console.log("5) Detalle insertado");
+// después de insertar en detalles_orden
+
 });
 
 
