@@ -149,21 +149,90 @@ app.get("/checkout", (req, res) => {
 });
 
 app.post("/checkout", async (req, res) => {
-  console.log("1) Validaciones OK");
-// después de validaciones
+  try {
+    console.log("1) Inicio checkout");
+    const {
+      nombre, direccion, telefono, restauranteId, pedido,
+      scheduleDate, scheduleSlot, precio
+    } = req.body;
 
-console.log("2) Usuario listo, id =", usuarioId);
-// después de crear/actualizar usuario
 
-console.log("3) Restaurante id =", restaurante_id);
-// después de buscar restaurante
+    console.log("2) Validaciones OK");
 
-console.log("4) Orden insertada, id =", ordenId);
-// justo tras insertar en ordenes
+    // usuario
+    let usuarioId = null;
+    if (req.session.user) {
+      usuarioId = req.session.user.id;
+      await pool.query(
+        `UPDATE usuarios
+         SET direccion = $1, telefono = $2
+         WHERE id = $3`,
+        [direccion, telefono, usuarioId]
+      );
+    } else {
+      const userResult = await pool.query(
+        `INSERT INTO usuarios (nombre, direccion, telefono)
+         VALUES ($1, $2, $3)
+         RETURNING id`,
+        [nombre.trim(), direccion.trim(), telefono]
+      );
+      usuarioId = userResult.rows[0].id;
+    }
+    console.log("3) Usuario listo, id =", usuarioId);
 
-console.log("5) Detalle insertado");
-// después de insertar en detalles_orden
+    // restaurante
+    let restaurante_id = null;
+    const restResult = await pool.query(
+      `SELECT id FROM restaurantes WHERE slug = $1`,
+      [restauranteId]
+    );
+    if (restResult.rows.length > 0) {
+      restaurante_id = restResult.rows[0].id;
+    }
+    console.log("4) Restaurante id =", restaurante_id);
 
+    // orden
+    const orderInsert = await pool.query(
+      `INSERT INTO ordenes
+       (usuario_id, nombre, direccion, telefono,
+        restaurante_id, restaurante_slug, pedido,
+        fecha, schedule_date, schedule_slot, estado)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'borrador')
+       RETURNING id`,
+      [
+        usuarioId, nombre.trim(), direccion.trim(), telefono,
+        restaurante_id, restauranteId, pedido,
+        new Date(), scheduleDate, scheduleSlot
+      ]
+    );
+    const ordenId = orderInsert.rows[0].id;
+    console.log("5) Orden insertada, id =", ordenId);
+
+    // detalle
+    const platoResult = await pool.query(
+      `SELECT id, precio FROM platos WHERE nombre = $1 LIMIT 1`,
+      [pedido]
+    );
+    if (platoResult.rows.length > 0) {
+      const platoId = platoResult.rows[0].id;
+      await pool.query(
+        `INSERT INTO detalles_orden (orden_id, plato_id, cantidad)
+         VALUES ($1, $2, $3)`,
+        [ordenId, platoId, 1]
+      );
+      console.log("6) Detalle insertado");
+    }
+
+    res.redirect("/pedidos");
+  } catch (error) {
+    console.error("Error al procesar el pedido:", error);
+    res.status(500).render("checkout", {
+      restaurante: req.body.restauranteId,
+      plato: req.body.pedido,
+      precio: req.body.precio || "0",
+      error: "Error al procesar el pedido"
+    });
+  }
 });
 
 
