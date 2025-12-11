@@ -12,7 +12,6 @@
     </div>
   </div>
 
-  <!-- Imagen hero -->
   <div class="restaurant-image" style="border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:40px;">
     <img src="<%= restaurante.imagen %>" alt="<%= restaurante.nombre %>" style="width:100%;height:380px;object-fit:cover;">
   </div>
@@ -32,7 +31,6 @@
         <div>
           <p class="dish-price">L <%= plato.precio %></p>
 
-          <!-- ✅ Botón sin comillas conflictivas -->
           <button 
             class="order-btn"
             data-restaurante="<%= restaurante.id %>"
@@ -47,7 +45,6 @@
   </div>
 </section>
 
-<!-- Script sin inline JS -->
 <script>
   document.querySelectorAll('.order-btn').forEach(btn => {
     btn.addEventListener('click', () => {

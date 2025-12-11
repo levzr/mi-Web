@@ -39,13 +39,11 @@
           <p><strong>Precio:</strong> L <%= precio || "0" %></p>
         </div>
 
-        <!-- Campos ocultos -->
         <input type="hidden" name="restauranteId" value="<%= restaurante || '' %>">
         <input type="hidden" name="pedido" value="<%= plato || '' %>">
         <input type="hidden" name="precio" value="<%= precio || '0' %>">
       </div>
 
-      <!-- Programar entrega -->
       <div class="form-section">
         <h2>Programar Entrega</h2>
 
@@ -88,7 +86,7 @@
     const slotSelect = document.getElementById('scheduleSlot');
     if (!dateInput || !slotSelect) return;
 
-    // === Rango de fechas: hoy a +7 días ===
+    // === Rango de fechas ===
     const today = new Date();
     today.setHours(0,0,0,0);
     const yyyy = today.getFullYear();
