@@ -1,8 +1,7 @@
 <%- include('parcial/header') %>
 
 <section class="container">
-  <!-- Info del restaurante igual que antes -->
-
+  <section class="container">
   <h2 class="menu-title">Menú</h2>
 
   <div class="menu-grid">
@@ -15,15 +14,25 @@
             <img src="/imgs/placeholder-dish.jpg" alt="<%= p.nombre %>">
           <% } %>
         </div>
+
         <div class="dish-info">
           <h3><%= p.nombre %></h3>
           <p><%= p.descripcion || '' %></p>
         </div>
+
         <div class="dish-price">
           L <%= p.precio %>
         </div>
+
+        <a
+          href="/checkout?restaurante=<%= restaurante.slug %>&plato=<%= p.nombre %>&precio=<%= p.precio %>"
+          class="btn-primary"
+          style="margin-top:8px;display:inline-block;">
+          Ordenar
+        </a>
       </div>
     <% }) %>
+  </div>
   </div>
 
   <% if (user && user.es_admin) { %>
@@ -31,7 +40,6 @@
 
     <h2 class="menu-title">Administrar platos</h2>
 
-    <!-- Formulario: nuevo plato -->
     <form action="/admin/restaurantes/<%= restaurante.id %>/platos" method="POST"
           style="margin-bottom:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
       <input type="hidden" name="slug" value="<%= restaurante.slug %>">
@@ -61,7 +69,6 @@
       </div>
     </form>
 
-    <!-- Tabla simple para editar/eliminar platos -->
     <div class="admin-pedidos-table-wrapper">
       <table class="admin-table">
         <thead>
