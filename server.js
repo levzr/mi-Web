@@ -105,6 +105,9 @@ app.get("/register", (req, res) => {
 // ===============================================
 // 🌐 RUTAS WEB (EJS)
 // ===============================================
+// ===============================================
+// 🌐 RUTAS WEB (EJS)
+// ===============================================
 app.get("/restaurantes/:slug", async (req, res) => {
   const { slug } = req.params;
 
@@ -134,6 +137,19 @@ app.get("/restaurantes/:slug", async (req, res) => {
     currentPage: null
   });
 });
+
+app.get("/checkout", (req, res) => {
+  const { restaurante, plato, precio } = req.query;
+
+  res.render("checkout", {
+    restaurante,
+    plato,
+    precio,
+    user: req.session.user || null,
+    currentPage: null
+  });
+});
+
 
 
 
