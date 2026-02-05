@@ -80,7 +80,9 @@ app.get("/", async (req, res) => {
     });
   } catch (err) {
     console.error("Error cargando restaurantes:", err);
-    res.status(500).render("error", { mensaje: "Error cargando restaurantes" });
+   res.status(500).render("error", { 
+  title: "Error",
+  message: "Error cargando restaurantes" });
   }
 });
 
